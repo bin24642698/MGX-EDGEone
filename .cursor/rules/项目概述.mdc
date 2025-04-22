@@ -1,0 +1,40 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 智光写作项目概述
+
+智光写作是一个使用Next.js构建的在线写作平台，结合现代UI设计和AI功能，帮助作者创作、整理和优化他们的作品。
+
+## 主要功能
+
+- 作品管理和编辑系统：管理作品和章节，提供富文本编辑功能
+- AI辅助写作：提供AI写作和润色功能
+- 档案馆系统：管理创作素材和设定
+- 提示词库：管理和使用提示词模板
+
+## 技术栈
+
+- 框架：[Next.js 14](mdc:next.config.mjs)
+- 前端：React 18，TypeScript
+- 样式：[Tailwind CSS](mdc:tailwind.config.ts)
+- 本地存储：IndexedDB (通过[idb库](mdc:src/lib/db.ts)实现)
+- 状态管理：[Zustand](mdc:src/store/index.ts)
+- 编辑器：[Tiptap](mdc:src/components/TiptapEditor.tsx)
+- AI功能：Gemini API
+
+## 应用架构
+
+应用遵循模块化结构，主要包括：
+
+- [页面路由](mdc:src/app/page.tsx)：通过Next.js的App Router实现
+- [组件](mdc:src/components/index.ts)：可复用的UI组件
+- [数据库管理](mdc:src/lib/dbManager.ts)：处理本地数据存储和检索
+- [状态管理](mdc:src/store/index.ts)：使用Zustand管理应用状态
+- [类型定义](mdc:src/types/index.ts)：TypeScript类型定义
+
+## UI设计风格
+
+项目UI设计灵感来源于吉卜力工作室的艺术风格，具有温暖、自然、手绘感的特点。详细的设计指南可在[风格指导](mdc:.cursor/rules/风格指导.md)文件中查看。
+

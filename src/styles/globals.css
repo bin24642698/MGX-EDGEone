@@ -1,0 +1,272 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * 全局样式
+ */
+
+:root {
+  /* 颜色系统 */
+  --primary-green: #5a9d6b;
+  --bg-color: #d8e8de;
+  --card-color: #f7f2ea;
+  --text-dark: #4b3b2a;
+  --text-medium: #6d5c4d;
+  --text-light: #8a7c70;
+  --accent-brown: #d1b08e;
+  --accent-yellow: rgba(255, 220, 120, 0.6);
+}
+
+/* 基础样式 */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-medium);
+  font-family: 'Source Han Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+}
+
+/* 网格背景 */
+.grid-background {
+  background-image:
+    linear-gradient(rgba(120, 180, 140, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 180, 140, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center center;
+}
+
+/* 吉卜力风格卡片 */
+.ghibli-card {
+  position: relative;
+  background-color: var(--card-color);
+  border-radius: 22px;
+  border: 1px solid rgba(120, 180, 140, 0.3);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.06),
+    0 3px 10px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+/* 胶带效果 */
+.tape {
+  position: absolute;
+  width: 80px;
+  height: 30px;
+  background-color: rgba(255, 220, 120, 0.6);
+  top: -15px;
+  left: 20px;
+  transform: rotate(-2deg);
+  z-index: 1;
+}
+
+.tape-texture {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.3) 1px,
+    transparent 1px
+  );
+  background-size: 4px 100%;
+}
+
+/* 翻页效果 */
+.page-curl {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    rgba(0, 0, 0, 0.03) 50%,
+    rgba(0, 0, 0, 0.1) 60%
+  );
+  border-radius: 0 0 0 5px;
+  box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.05);
+  z-index: 2;
+}
+
+/* 装饰元素 */
+.dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-brown);
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.wave {
+  position: absolute;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+/* 按钮样式 */
+.round-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--primary-green);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.round-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: 50% 50% 0 0;
+}
+
+.round-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.round-button:active {
+  transform: scale(0.97);
+}
+
+.ghibli-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.ghibli-button.primary {
+  background-color: var(--primary-green);
+  color: white;
+}
+
+.ghibli-button.primary:hover {
+  background-color: #4a8d5b;
+}
+
+.ghibli-button.outline {
+  border: 1px solid var(--primary-green);
+  color: var(--primary-green);
+  background-color: transparent;
+}
+
+.ghibli-button.outline:hover {
+  background-color: rgba(90, 157, 107, 0.1);
+}
+
+/* 表单样式 */
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(120, 180, 140, 0.3);
+  background-color: rgba(255, 255, 255, 0.7);
+  color: var(--text-dark);
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(90, 157, 107, 0.2);
+}
+
+/* 徽章样式 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* 标题样式 */
+.section-title {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  font-family: 'Ma Shan Zheng', cursive;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: rgba(90, 157, 107, 0.3);
+  border-radius: 2px;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* 自定义字体 */
+.font-ma-shan {
+  font-family: 'Ma Shan Zheng', cursive;
+}
+
+/* 按钮样式 */
+.btn-primary {
+  background-color: var(--primary-green);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #4a8d5b;
+}
+
+.btn-outline {
+  border: 1px solid var(--primary-green);
+  color: var(--primary-green);
+  background-color: transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  background-color: rgba(90, 157, 107, 0.1);
+}
+
+/* 内阴影效果 */
+.shadow-inner-top {
+  box-shadow: inset 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,95 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 智光写作档案馆功能
+
+档案馆是智光写作应用的核心功能之一，用于管理创作素材、角色设定、世界观等资料。本文档详细介绍档案馆模块的功能和实现方式。
+
+## 档案馆核心组件
+
+- [ArchiveModal.tsx](mdc:src/components/archives/ArchiveModal.tsx)：档案馆主模态窗口，包含档案浏览、筛选和管理功能
+- [ArchiveEditor.tsx](mdc:src/components/archives/ArchiveEditor.tsx)：档案编辑器，用于创建和编辑档案内容
+- [ArchiveCard.tsx](mdc:src/components/archives/ArchiveCard.tsx)：档案卡片组件，用于展示档案预览信息
+
+## 档案数据结构
+
+档案数据主要存储在IndexedDB的`archives`和`categories`集合中。档案数据结构包括：
+
+```typescript
+interface Archive {
+  id: string;          // 唯一标识符
+  title: string;       // 档案标题
+  content: string;     // 档案内容(富文本)
+  categoryId: string;  // 所属分类ID
+  tags: string[];      // 标签列表
+  createdAt: number;   // 创建时间
+  updatedAt: number;   // 更新时间
+}
+
+interface Category {
+  id: string;          // 唯一标识符
+  name: string;        // 分类名称
+  parentId?: string;   // 父分类ID(可选)
+  color?: string;      // 分类颜色
+}
+```
+
+## 档案馆主要功能
+
+### 1. 档案管理
+
+- **创建档案**：用户可以创建新的档案，设置标题、内容、分类和标签
+- **编辑档案**：修改已有档案的内容和属性
+- **删除档案**：从系统中移除不需要的档案
+- **查看档案**：浏览档案详细内容
+
+### 2. 分类管理
+
+- **创建分类**：添加新的档案分类
+- **编辑分类**：修改分类名称和颜色
+- **删除分类**：移除不需要的分类
+- **分类树结构**：支持父子分类的层级关系
+
+### 3. 筛选和搜索
+
+- **分类筛选**：按分类查看档案
+- **标签筛选**：按标签过滤档案
+- **全文搜索**：搜索档案标题和内容
+
+### 4. 集成功能
+
+- **引用档案**：在写作过程中可以引用档案内容
+- **AI关联**：在AI写作时关联相关档案，提供创作背景
+- **导入导出**：支持档案数据的导入和导出
+
+## 技术实现
+
+### 数据操作
+
+档案数据的增删改查操作通过[dbManager.ts](mdc:src/lib/dbManager.ts)中的方法实现：
+
+- `addArchive`：添加新档案
+- `updateArchive`：更新档案内容
+- `deleteArchive`：删除档案
+- `getArchivesByCategory`：按分类获取档案
+- `searchArchives`：搜索档案
+
+### UI交互
+
+档案馆的UI交互主要通过[ArchiveModal.tsx](mdc:src/components/archives/ArchiveModal.tsx)组件实现，包括：
+
+- 分类树导航
+- 档案列表展示
+- 搜索和筛选界面
+- 档案查看和编辑界面
+
+### 集成方式
+
+档案馆功能通过以下方式与应用其他部分集成：
+
+1. 在作品编辑器中添加打开档案馆的按钮
+2. 在AI写作界面提供档案关联功能
+3. 在章节管理中支持引用档案内容
+

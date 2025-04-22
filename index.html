@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 测速工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: #eef2f7;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #0056b3;
+            font-size: 2em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+        }
+        textarea {
+            resize: vertical;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease;
+        }
+        button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        #results h2 {
+            margin-top: 0;
+            color: #0056b3;
+            font-size: 1.5em;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        #results p {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        #results strong {
+            margin-right: 8px;
+            color: #333;
+        }
+        #responseText {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+        }
+        .status-loading {
+            color: #007bff;
+            font-weight: bold;
+        }
+        .status-error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-complete {
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API 测速工具</h1>
+
+        <div class="form-group">
+            <label for="apiUrl">API URL:</label>
+            <input type="text" id="apiUrl" placeholder="请输入 API URL...">
+        </div>
+
+        <div class="form-group">
+            <label for="apiKey">API Key:</label>
+            <input type="text" id="apiKey" placeholder="请输入 API Key...">
+        </div>
+
+        <div class="form-group">
+            <label for="model">模型 (Model):</label>
+            <input type="text" id="model" placeholder="请输入模型名称...">
+        </div>
+
+        <div class="form-group">
+            <label for="prompt">提示 (Prompt):</label>
+            <textarea id="prompt" rows="6" placeholder="请输入您想测试的提示..."></textarea>
+        </div>
+
+        <button id="startButton">开始测速</button>
+
+        <div id="results" style="display: none;">
+            <h2>测速结果</h2>
+            <p><strong>状态:</strong> <span id="status">等待开始...</span></p>
+            <p><strong>总耗时:</strong> <span id="totalTime">-</span> ms</p>
+            <p><strong>返回 Token 数 (估算):</strong> <span id="tokenCount">-</span></p>
+            <p><strong>每秒 Token 数 (估算):</strong> <span id="tokensPerSecond">-</span> tokens/s</p>
+            <p><strong>返回内容:</strong></p>
+            <div id="responseText">-</div>
+        </div>
+    </div>
+
+    <script>
+        const apiUrlInput = document.getElementById('apiUrl');
+        const apiKeyInput = document.getElementById('apiKey');
+        const modelInput = document.getElementById('model');
+        const promptInput = document.getElementById('prompt');
+        const startButton = document.getElementById('startButton');
+        const resultsDiv = document.getElementById('results');
+        const statusSpan = document.getElementById('status');
+        const totalTimeSpan = document.getElementById('totalTime');
+        const tokenCountSpan = document.getElementById('tokenCount');
+        const tokensPerSecondSpan = document.getElementById('tokensPerSecond');
+        const responseTextDiv = document.getElementById('responseText');
+
+        // --- LocalStorage Handling ---
+        const loadSettings = () => {
+            apiUrlInput.value = localStorage.getItem('apiUrl') || 'https://api.openai.com/v1/chat/completions';
+            apiKeyInput.value = localStorage.getItem('apiKey') || '';
+            modelInput.value = localStorage.getItem('model') || 'gpt-3.5-turbo';
+            promptInput.value = localStorage.getItem('prompt') || '';
+        };
+
+        const saveSettings = () => {
+            localStorage.setItem('apiUrl', apiUrlInput.value);
+            localStorage.setItem('apiKey', apiKeyInput.value);
+            localStorage.setItem('model', modelInput.value);
+            localStorage.setItem('prompt', promptInput.value);
+        };
+
+        // Load settings on page load
+        window.addEventListener('load', loadSettings);
+
+        // Save settings when inputs change (optional, can also save only on button click)
+        apiUrlInput.addEventListener('input', saveSettings);
+        apiKeyInput.addEventListener('input', saveSettings);
+        modelInput.addEventListener('input', saveSettings);
+        promptInput.addEventListener('input', saveSettings);
+
+        // --- API Call Logic ---
+        startButton.addEventListener('click', async () => {
+            const apiUrl = apiUrlInput.value.trim();
+            const apiKey = apiKeyInput.value.trim();
+            const model = modelInput.value.trim();
+            const prompt = promptInput.value.trim();
+
+            // Save current settings just before making the call
+            saveSettings();
+
+            if (!apiUrl || !apiKey || !model || !prompt) {
+                alert('请输入 API URL, API Key, 模型名称和提示内容！');
+                return;
+            }
+
+            resultsDiv.style.display = 'block';
+            statusSpan.textContent = '正在请求 API...';
+            statusSpan.className = 'status-loading';
+            totalTimeSpan.textContent = '-';
+            tokenCountSpan.textContent = '-';
+            tokensPerSecondSpan.textContent = '-';
+            responseTextDiv.textContent = '-';
+            startButton.disabled = true;
+
+            const startTime = performance.now();
+            let rawResponseText = ''; // Store raw response text
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.7,
+                        max_tokens: 2048
+                        // 可以根据需要添加其他参数
+                    })
+                });
+
+                rawResponseText = await response.text(); // Get raw response text first
+
+                if (!response.ok) {
+                    let errorMessage = `API Error: ${response.status}`;
+                    try {
+                        // Try to parse error message from JSON response
+                        const errorData = JSON.parse(rawResponseText);
+                        if (errorData.error && errorData.error.message) {
+                            errorMessage += ` - ${errorData.error.message}`;
+                        } else {
+                             errorMessage += ` - ${rawResponseText}`; // Show raw text if JSON structure is unexpected
+                        }
+                    } catch (jsonError) {
+                        // If response is not JSON, show the raw text
+                        errorMessage += ` - ${rawResponseText}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                // If response is OK, try to parse the JSON data
+                const data = JSON.parse(rawResponseText);
+                const endTime = performance.now();
+
+                const totalTime = endTime - startTime;
+                let responseContent = '';
+                let tokenCount = 0;
+
+                // Handle potential variations in response structure (e.g., OpenAI vs other APIs)
+                if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                    responseContent = data.choices[0].message.content;
+                    // 改进的 token 计数方法，更适合中英文混合内容
+                    // 英文按空格分词，中文按字符计数
+                    // 这仍是估算，但比简单的空格分割更准确
+                    const englishWords = responseContent.match(/[a-zA-Z]+/g) || [];
+                    const chineseChars = responseContent.match(/[\u4e00-\u9fa5]/g) || [];
+                    const numbers = responseContent.match(/\d+/g) || [];
+                    const symbols = responseContent.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/g) || [];
+
+                    // 英文单词约等于1个token，中文字符约等于1.5个token，数字和符号约等于0.5个token
+                    tokenCount = englishWords.length + Math.ceil(chineseChars.length * 1.5) +
+                               Math.ceil((numbers.join('').length + symbols.join('').length) * 0.5);
+                } else if (data.choices && data.choices[0] && data.choices[0].text) {
+                    // 处理 OpenAI 的 completions API 响应格式
+                    responseContent = data.choices[0].text;
+                } else if (data.choices && data.choices[0] && data.choices[0].delta && data.choices[0].delta.content) {
+                    // 处理 OpenAI 的 streaming 响应格式
+                    responseContent = data.choices[0].delta.content;
+                } else if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                    // 处理 Google Gemini API 响应格式
+                    responseContent = data.candidates[0].content.parts[0].text || JSON.stringify(data.candidates[0].content.parts);
+                } else {
+                    // 处理其他未知的响应结构
+                    responseContent = JSON.stringify(data, null, 2); // 如果结构未知，显示完整的 JSON
+                    console.warn("未知的 API 响应结构:", data);
+                }
+
+                // 计算 token 数量
+                if (!tokenCount) {
+                    // 改进的 token 计数方法
+                    const englishWords = responseContent.match(/[a-zA-Z]+/g) || [];
+                    const chineseChars = responseContent.match(/[\u4e00-\u9fa5]/g) || [];
+                    const numbers = responseContent.match(/\d+/g) || [];
+                    const symbols = responseContent.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/g) || [];
+
+                    tokenCount = englishWords.length + Math.ceil(chineseChars.length * 1.5) +
+                               Math.ceil((numbers.join('').length + symbols.join('').length) * 0.5);
+                }
+
+
+                // 计算每秒 token 数，并确保不会因为除以零而出错
+                const tokensPerSecond = (totalTime > 0 && tokenCount > 0) ? (tokenCount / (totalTime / 1000)).toFixed(2) : 'N/A';
+
+                statusSpan.textContent = '完成';
+                statusSpan.className = 'status-complete';
+                totalTimeSpan.textContent = totalTime.toFixed(2);
+                tokenCountSpan.textContent = tokenCount;
+                tokensPerSecondSpan.textContent = tokensPerSecond;
+                responseTextDiv.textContent = responseContent;
+
+            } catch (error) {
+                statusSpan.textContent = `错误: ${error.message}`;
+                statusSpan.className = 'status-error';
+                console.error('API 请求失败:', error);
+                // Display raw response text in case of error
+                responseTextDiv.textContent = `请求失败。\n错误信息: ${error.message}\n\n原始响应内容 (如果可用):\n${rawResponseText || 'N/A'}`;
+            } finally {
+                startButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
