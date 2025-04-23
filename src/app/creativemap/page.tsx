@@ -18,8 +18,9 @@ const creativeMapItems = [
     name: '导语',
     description: '创作引人入胜的开篇导语',
     icon: 'format_quote',
-    color: 'bg-[#7D85CC20]',
-    textColor: 'text-[#7D85CC]',
+    color: 'bg-[#7D85CC]', // 移除透明度
+    textColor: 'text-white', // 改为白色文字以提高对比度
+    buttonColor: 'bg-[#7D85CC]', // 按钮颜色与 LOGO 保持一致
     borderColor: 'border-[rgba(125,133,204,0.4)]',
     gradient: 'from-[#7D85CC] to-[#6F9CE0]',
     tapeColor: 'rgba(125,133,204,0.7)'
@@ -29,8 +30,9 @@ const creativeMapItems = [
     name: '大纲',
     description: '构建故事的骨架和框架',
     icon: 'format_list_bulleted',
-    color: 'bg-[#E0976F20]',
-    textColor: 'text-[#E0976F]',
+    color: 'bg-[#E0976F]', // 移除透明度
+    textColor: 'text-white', // 改为白色文字以提高对比度
+    buttonColor: 'bg-[#E0976F]', // 按钮颜色与 LOGO 保持一致
     borderColor: 'border-[rgba(224,151,111,0.4)]',
     gradient: 'from-[#E0976F] to-[#E0C56F]',
     tapeColor: 'rgba(224,149,117,0.7)'
@@ -40,8 +42,9 @@ const creativeMapItems = [
     name: '细纲',
     description: '规划更详细的章节内容',
     icon: 'subject',
-    color: 'bg-[#E0C56F20]',
-    textColor: 'text-[#E0C56F]',
+    color: 'bg-[#E0C56F]', // 移除透明度
+    textColor: 'text-white', // 改为白色文字以提高对比度
+    buttonColor: 'bg-[#E0C56F]', // 按钮颜色与 LOGO 保持一致
     borderColor: 'border-[rgba(224,197,111,0.4)]',
     gradient: 'from-[#E0C56F] to-[#E0976F]',
     tapeColor: 'rgba(224,197,111,0.7)'
@@ -51,8 +54,9 @@ const creativeMapItems = [
     name: '世界观',
     description: '构建故事发生的世界和设定',
     icon: 'public',
-    color: 'bg-[#E06F9C20]',
-    textColor: 'text-[#E06F9C]',
+    color: 'bg-[#E06F9C]', // 移除透明度
+    textColor: 'text-white', // 改为白色文字以提高对比度
+    buttonColor: 'bg-[#E06F9C]', // 按钮颜色与 LOGO 保持一致
     borderColor: 'border-[rgba(224,111,156,0.4)]',
     gradient: 'from-[#E06F9C] to-[#E0976F]',
     tapeColor: 'rgba(224,111,156,0.7)'
@@ -62,8 +66,9 @@ const creativeMapItems = [
     name: '角色',
     description: '设计故事中的人物形象',
     icon: 'person',
-    color: 'bg-[#9C6FE020]',
-    textColor: 'text-[#9C6FE0]',
+    color: 'bg-[#9C6FE0]', // 移除透明度
+    textColor: 'text-white', // 改为白色文字以提高对比度
+    buttonColor: 'bg-[#9C6FE0]', // 按钮颜色与 LOGO 保持一致
     borderColor: 'border-[rgba(156,111,224,0.4)]',
     gradient: 'from-[#9C6FE0] to-[#7D85CC]',
     tapeColor: 'rgba(156,111,224,0.7)'
@@ -73,8 +78,9 @@ const creativeMapItems = [
     name: '情节',
     description: '规划故事的发展和转折',
     icon: 'timeline',
-    color: 'bg-[#6F9CE020]',
-    textColor: 'text-[#6F9CE0]',
+    color: 'bg-[#6F9CE0]', // 移除透明度
+    textColor: 'text-white', // 改为白色文字以提高对比度
+    buttonColor: 'bg-[#6F9CE0]', // 按钮颜色与 LOGO 保持一致
     borderColor: 'border-[rgba(111,156,224,0.4)]',
     gradient: 'from-[#6F9CE0] to-[#9C6FE0]',
     tapeColor: 'rgba(111,156,224,0.7)'
@@ -176,8 +182,8 @@ export default function CreativeMapPage() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {creativeMapItems.map((item) => (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     className="ghibli-card group h-80 text-center relative cursor-pointer"
                     onClick={() => openCreativeWindow(item)}
                   >
@@ -185,27 +191,27 @@ export default function CreativeMapPage() {
                     <div className="tape" style={{ backgroundColor: item.tapeColor }}>
                       <div className="tape-texture"></div>
                     </div>
-                    
+
                     <div className="flex flex-col items-center p-8">
                       <div className={`w-16 h-16 ${item.color} rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                         <span className={`material-icons text-2xl ${item.textColor}`}>{item.icon}</span>
                       </div>
-                      <h3 
-                        className="font-medium text-text-dark text-xl mb-3" 
+                      <h3
+                        className="font-medium text-text-dark text-xl mb-3"
                         style={{fontFamily: "'Ma Shan Zheng', cursive"}}
                       >
                         {item.name}
                       </h3>
                       <p className="text-text-medium text-sm mb-6">{item.description}</p>
                       <button
-                        className={`px-5 py-2 rounded-full ${item.textColor.replace('text-', 'bg-')} text-white hover:bg-opacity-80 transition-colors duration-200 flex items-center mx-auto pointer-events-none`}
+                        className={`px-5 py-2 rounded-full ${item.buttonColor} text-white hover:bg-opacity-80 transition-colors duration-200 flex items-center mx-auto pointer-events-none`}
                         tabIndex={-1}
                       >
                         <span className="material-icons mr-2 text-sm">edit</span>
                         开始创作
                       </button>
                     </div>
-                    
+
                     {/* 翻页效果 */}
                     <div className="page-curl"></div>
                   </div>

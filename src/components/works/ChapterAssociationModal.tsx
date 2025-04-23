@@ -75,7 +75,7 @@ export const ChapterAssociationModal: React.FC<ChapterAssociationModalProps> = (
     const newState = !isAutoAssociate;
     setIsAutoAssociate(newState);
 
-    // 如果关闭自动关联，清除关联计数
+    // 如果关闭自动关联，保持当前选中的章节，但将自动关联计数设为0
     if (!newState) {
       setAutoAssociateCount(0);
     }
@@ -89,11 +89,15 @@ export const ChapterAssociationModal: React.FC<ChapterAssociationModalProps> = (
     if (autoAssociateCount === n) {
       setAutoAssociateCount(0);
       setSelectedChapters([]);
+      // 关闭自动关联
+      setIsAutoAssociate(false);
       return;
     }
 
     // 否则设置为新的值
     setAutoAssociateCount(n);
+    // 开启自动关联
+    setIsAutoAssociate(true);
 
     // 生成要选择的章节数组
     let chaptersToSelect: number[] = [];
@@ -201,10 +205,9 @@ export const ChapterAssociationModal: React.FC<ChapterAssociationModalProps> = (
 
             {/* 关联章节按钮 */}
             <button
-              onClick={() => associateFirstNChapters(10)}
+              onClick={() => associateFirstNChapters(5)}
               className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center ${
-                // 只有当自动关联计数为10时才显示选中状态
-                autoAssociateCount === 10
+                autoAssociateCount === 5
                 ? 'bg-[#E0976F] text-white'
                 : 'bg-[#faf0e6] text-[#E0976F] border border-[#E0976F]/30'}`}
             >
@@ -213,12 +216,25 @@ export const ChapterAssociationModal: React.FC<ChapterAssociationModalProps> = (
                 <path d="M3 12H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 <path d="M3 18H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
-              前10章
+              前5章
+            </button>
+            <button
+              onClick={() => associateFirstNChapters(15)}
+              className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center ${
+                autoAssociateCount === 15
+                ? 'bg-[#E0976F] text-white'
+                : 'bg-[#faf0e6] text-[#E0976F] border border-[#E0976F]/30'}`}
+            >
+              <svg className="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 6H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M3 12H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M3 18H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              前15章
             </button>
             <button
               onClick={() => associateFirstNChapters(30)}
               className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center ${
-                // 只有当自动关联计数为30时才显示选中状态
                 autoAssociateCount === 30
                 ? 'bg-[#E0976F] text-white'
                 : 'bg-[#faf0e6] text-[#E0976F] border border-[#E0976F]/30'}`}
@@ -233,7 +249,6 @@ export const ChapterAssociationModal: React.FC<ChapterAssociationModalProps> = (
             <button
               onClick={() => associateFirstNChapters(50)}
               className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center ${
-                // 只有当自动关联计数为50时才显示选中状态
                 autoAssociateCount === 50
                 ? 'bg-[#E0976F] text-white'
                 : 'bg-[#faf0e6] text-[#E0976F] border border-[#E0976F]/30'}`}

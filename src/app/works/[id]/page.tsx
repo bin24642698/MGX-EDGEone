@@ -44,6 +44,11 @@ interface Chapter {
   content: string;
 }
 
+// 侧边栏收起状态的实现
+
+// 侧边栏收起状态的localStorage键
+const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
+
 // 章节管理侧边栏组件
 const ChapterSidebar = ({
   chapters,
@@ -69,72 +74,111 @@ const ChapterSidebar = ({
     'rgba(231,169,85,0.3)',  // 黄色
   ];
 
-  return (
-    <div className="w-64 border-r border-[rgba(120,180,140,0.3)] bg-card-color shadow-sm flex flex-col rounded-tr-2xl rounded-br-2xl">
-      <div className="p-5 border-b border-[rgba(120,180,140,0.3)] flex items-center">
-        <div className="w-10 h-10 bg-primary-green rounded-xl flex items-center justify-center text-white font-bold mr-3 text-base shadow-sm">智</div>
-        <span className="text-text-dark text-lg font-medium tracking-wide" style={{ fontFamily: "'Ma Shan Zheng', cursive" }}>逐光写作</span>
-      </div>
+  // 从 localStorage 加载收起状态
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      return savedState === 'true';
+    }
+    return false;
+  });
 
-      <div className="flex-1 py-6 px-2 overflow-auto">
-        <div className="mb-4 px-3 flex justify-between items-center">
-          <div className="flex items-center">
-            <span className="text-text-dark font-medium text-lg font-ma-shan transform -translate-y-[2px] mr-2">章节管理</span>
+  // 当收起状态变化时，保存到 localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, isCollapsed.toString());
+    }
+  }, [isCollapsed]);
+
+  return (
+    <>
+      {/* 收起状态下只显示展开按钮 */}
+      {isCollapsed ? (
+        <button
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-card-color p-2 rounded-r-xl shadow-md border border-l-0 border-[rgba(120,180,140,0.2)] text-text-medium hover:text-primary-green transition-colors duration-200 z-10"
+          onClick={() => setIsCollapsed(false)}
+          aria-label="展开侧边栏"
+        >
+          <span className="material-icons">chevron_right</span>
+        </button>
+      ) : (
+        <div className="sidebar w-64 border-r border-[rgba(120,180,140,0.2)] bg-card-color shadow-md flex flex-col rounded-tr-2xl rounded-br-2xl transition-all duration-300">
+          <div className="p-5 border-b border-[rgba(120,180,140,0.2)] flex items-center">
+            <div className="w-10 h-10 bg-primary-green rounded-xl flex items-center justify-center text-white font-bold mr-3 text-base shadow-sm">智</div>
+            <span className="text-text-dark text-lg font-medium tracking-wide" style={{ fontFamily: "'Ma Shan Zheng', cursive" }}>逐光写作</span>
+          </div>
+
+          <div className="flex-1 py-6 px-2 overflow-auto">
+            <div className="mb-4 px-3 flex justify-between items-center">
+              <div className="flex items-center">
+                <span className="text-text-dark font-medium text-lg font-ma-shan transform -translate-y-[2px] mr-2">章节管理</span>
+                <button
+                  onClick={() => setIsDescending(prev => !prev)}
+                  className="p-1.5 rounded-lg text-gray-500 hover:bg-[rgba(90,157,107,0.1)] transition-all"
+                  title={isDescending ? '当前为倒序，点击切换为正序' : '当前为正序，点击切换为倒序'}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {isDescending ? (
+                      // 倒序图标
+                      <path d="M7 3L7 21M7 21L3 17M7 21L11 17M17 21V3M17 3L13 7M17 3L21 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    ) : (
+                      // 正序图标
+                      <path d="M7 21L7 3M7 3L3 7M7 3L11 7M17 3V21M17 21L13 17M17 21L21 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    )}
+                  </svg>
+                </button>
+              </div>
+              <button
+                className="p-1 rounded-full hover:bg-[rgba(90,157,107,0.1)] transition-colors duration-200 transform translate-y-[2px]"
+                onClick={onAddChapter}
+                title="添加新章节"
+              >
+                <span className="material-icons text-primary-green">add_circle</span>
+              </button>
+            </div>
+            {[...chapters]
+              .map((chapter, index) => ({ chapter, index }))
+              .sort((a, b) => isDescending ? b.index - a.index : a.index - b.index)
+              .map(({ chapter, index }) => {
+                // 根据索引选择颜色
+                const colorIndex = index % chapterColors.length;
+                const borderColor = chapterColors[colorIndex];
+                const iconColor = activeChapter === index ?
+                  `rgb(${90 + index * 15}, ${130 + (index % 3) * 20}, ${140 - (index % 5) * 10})` :
+                  'rgba(90, 90, 90, 0.7)';
+
+                return (
+                  <div
+                    key={index}
+                    className={`menu-item ${activeChapter === index ? 'active shadow-md' : 'shadow-sm opacity-80'}`}
+                    onClick={() => onChapterClick(index)}
+                    style={{
+                      borderLeft: activeChapter === index ? `3px solid ${borderColor}` : 'none'
+                    }}
+                  >
+                    <div className="menu-icon">
+                      <span className="material-icons text-2xl" style={{ color: iconColor }}>article</span>
+                    </div>
+                    <span className="menu-text truncate">第 {index + 1} 章</span>
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* 收起/展开按钮 */}
+          <div className="p-4 border-t border-[rgba(120,180,140,0.2)] flex justify-center">
             <button
-              onClick={() => setIsDescending(prev => !prev)}
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-[rgba(90,157,107,0.1)] transition-all"
-              title={isDescending ? '当前为倒序，点击切换为正序' : '当前为正序，点击切换为倒序'}
+              className="w-full flex items-center justify-center py-2 rounded-xl text-text-medium hover:bg-[rgba(120,180,140,0.1)] transition-colors duration-200"
+              onClick={() => setIsCollapsed(true)}
+              aria-label="收起侧边栏"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {isDescending ? (
-                  // 倒序图标
-                  <path d="M7 3L7 21M7 21L3 17M7 21L11 17M17 21V3M17 3L13 7M17 3L21 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                ) : (
-                  // 正序图标
-                  <path d="M7 21L7 3M7 3L3 7M7 3L11 7M17 3V21M17 21L13 17M17 21L21 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                )}
-              </svg>
+              <span className="material-icons">chevron_left</span>
+              <span className="ml-2">收起</span>
             </button>
           </div>
-          <button
-            className="p-1 rounded-full hover:bg-[rgba(90,157,107,0.1)] transition-colors duration-200 transform translate-y-[2px]"
-            onClick={onAddChapter}
-            title="添加新章节"
-          >
-            <span className="material-icons text-primary-green">add_circle</span>
-          </button>
         </div>
-        {[...chapters]
-          .map((chapter, index) => ({ chapter, index }))
-          .sort((a, b) => isDescending ? b.index - a.index : a.index - b.index)
-          .map(({ chapter, index }) => {
-            // 根据索引选择颜色
-            const colorIndex = index % chapterColors.length;
-            const borderColor = chapterColors[colorIndex];
-            const iconColor = activeChapter === index ?
-              `rgb(${90 + index * 15}, ${130 + (index % 3) * 20}, ${140 - (index % 5) * 10})` :
-              'rgba(90, 90, 90, 0.7)';
-
-            return (
-              <div
-                key={index}
-                className={`menu-item ${activeChapter === index ? 'active shadow-md' : 'shadow-sm opacity-80'}`}
-                onClick={() => onChapterClick(index)}
-                style={{
-                  borderLeft: activeChapter === index ? `3px solid ${borderColor}` : 'none'
-                }}
-              >
-                <div className="menu-icon">
-                  <span className="material-icons text-2xl" style={{ color: iconColor }}>article</span>
-                </div>
-                <span className="menu-text truncate">第 {index + 1} 章</span>
-              </div>
-            );
-          })}
-      </div>
-
-      <div className="p-4 mt-auto"></div>
-    </div>
+      )}
+    </>
   );
 };
 
@@ -233,12 +277,26 @@ const RichTextEditor = ({
     }
   };
 
-  // 添加一个状态来控制是否使用A4宽度，默认为true
-  const [isA4Width, setIsA4Width] = React.useState(true);
+  // 添加一个状态来控制是否使用A4宽度，从localStorage加载初始值
+  const [isA4Width, setIsA4Width] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem('editor_a4_width_mode');
+      // 如果没有保存过设置，默认为true（A4模式）
+      return savedState === null ? true : savedState === 'true';
+    }
+    return true; // 默认为A4模式
+  });
 
-  // 切换A4宽度模式
+  // 切换A4宽度模式并保存到localStorage
   const toggleA4Width = () => {
-    setIsA4Width(!isA4Width);
+    setIsA4Width(prev => {
+      const newValue = !prev;
+      // 保存到localStorage，全局统一记忆
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('editor_a4_width_mode', newValue.toString());
+      }
+      return newValue;
+    });
   };
 
   // AI辅助弹窗状态
@@ -270,7 +328,7 @@ const RichTextEditor = ({
 
           <button
             onClick={openPolishModal}
-            className="p-2.5 rounded-lg bg-[#7a9ec0] hover:bg-[#6a8eb0] active:bg-[#5a7ea0] transition-all duration-200 flex items-center text-white border border-[#6a8eb0] shadow-[0_2px_5px_rgba(50,70,90,0.3)]"
+            className="p-2.5 rounded-lg bg-[#d5a26f] hover:bg-[#c5925f] active:bg-[#b5824f] transition-all duration-200 flex items-center text-white border border-[#c5925f] shadow-[0_2px_5px_rgba(100,70,40,0.3)]"
             title="AI润色"
           >
             <span className="material-icons text-white">auto_fix_high</span>
@@ -279,7 +337,7 @@ const RichTextEditor = ({
 
           <button
             onClick={openArchiveModal}
-            className="p-2.5 rounded-lg bg-[#d5a26f] hover:bg-[#c5925f] active:bg-[#b5824f] transition-all duration-200 flex items-center text-white border border-[#c5925f] shadow-[0_2px_5px_rgba(100,70,40,0.3)]"
+            className="p-2.5 rounded-lg bg-[#7a9ec0] hover:bg-[#6a8eb0] active:bg-[#5a7ea0] transition-all duration-200 flex items-center text-white border border-[#6a8eb0] shadow-[0_2px_5px_rgba(50,70,90,0.3)]"
             title="档案馆"
           >
             <span className="material-icons text-white">folder_special</span>

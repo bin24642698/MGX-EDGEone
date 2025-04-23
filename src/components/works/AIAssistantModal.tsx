@@ -7,6 +7,7 @@ import { getAllPrompts, getPromptsByType, Prompt, Archive, getArchivesByWorkId }
 import { generateAIContentStream, MODELS, Message } from '@/lib/AIserver';
 import { ArchiveModal } from '@/components/archives/ArchiveModal'; // 导入 ArchiveModal
 import { ChapterAssociationModal } from '@/components/works/ChapterAssociationModal'; // 导入章节关联组件
+import { OptimizeResultModal } from '@/components/works/OptimizeResultModal'; // 导入优化结果组件
 
 // 创意地图类型常量 - 用于显示分类名称
 const creativeMapTypes = {
@@ -61,6 +62,14 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   const [selectedArchives, setSelectedArchives] = useState<Archive[]>([]);
   const [availableArchives, setAvailableArchives] = useState<Archive[]>([]);
 
+  // 优化相关状态
+  const [showOptimizeModal, setShowOptimizeModal] = useState(false);
+  const [optimizeSettings, setOptimizeSettings] = useState<{
+    promptId: number | null;
+    optimizeText: string;
+    selectedModel: string;
+  }>({ promptId: null, optimizeText: '', selectedModel: MODELS.GEMINI_FLASH });
+
   // 当前选择的提示词类型
   const [promptType, setPromptType] = useState<'ai_writing' | 'ai_polishing' | 'ai_analysis'>(initialPromptType);
 
@@ -114,7 +123,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
   // 自动关联状态
   const [isAutoAssociate, setIsAutoAssociate] = useState<boolean>(false);
-  const [autoAssociateCount, setAutoAssociateCount] = useState<number>(10); // 默认前10章
+  const [autoAssociateCount, setAutoAssociateCount] = useState<number>(5); // 默认前5章
 
   // 章节排序状态
   const [isDescending, setIsDescending] = useState<boolean>(defaultIsDescending); // 使用传入的默认排序状态
@@ -134,7 +143,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   // 监听章节数量变化，如果开启了自动关联，则自动更新关联章节
   useEffect(() => {
     // 当章节数量变化且开启了自动关联时，自动更新关联章节
-    if (isAutoAssociate && chapters.length > 0) {
+    if (isAutoAssociate && chapters.length > 0 && autoAssociateCount > 0) {
       // 使用当前的自动关联设置更新章节关联
       // 定义一个内部函数来处理章节关联，避免依赖项问题
       const updateChapterAssociation = () => {
@@ -257,6 +266,19 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     setTimeout(() => {
       setIsButtonCooldown(false);
     }, 1000);
+
+    // 保存当前的章节关联和自动关联状态到localStorage
+    try {
+      const memoryToSave = {
+        selectedChapters: newSelectedChapters,
+        selectedArchiveIds: typeMemory[promptType].selectedArchiveIds,
+        isAutoAssociate: newIsAutoAssociate,
+        autoAssociateCount: newAutoAssociateCount
+      };
+      localStorage.setItem(`ai_assistant_${promptType}_memory`, JSON.stringify(memoryToSave));
+    } catch (error) {
+      console.error('保存章节关联状态失败:', error);
+    }
 
     console.log('章节关联已更新:', newSelectedChapters, '自动关联:', newIsAutoAssociate, '关联数量:', newAutoAssociateCount);
   };
@@ -1091,6 +1113,15 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     // 生成视图的底部按钮
     return (
       <div className="flex justify-end space-x-3 pt-2">
+        {generatedContent && !isGenerating && (
+          <button
+            onClick={() => setShowOptimizeModal(true)}
+            className="ghibli-button outline text-sm py-2 transition-all duration-200 flex items-center bg-[rgba(125,133,204,0.1)] border-[#7D85CC] text-[#7D85CC]"
+          >
+            <span className="material-icons mr-1 text-sm">auto_fix_high</span>
+            优化
+          </button>
+        )}
         <button
           onClick={handleReturnToSelection}
           disabled={isGenerating} // 生成过程中禁用返回按钮
@@ -1204,6 +1235,26 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
               </button>
             </div>
           }
+        />
+      )}
+
+      {/* 优化结果模态窗口 */}
+      {showOptimizeModal && (
+        <OptimizeResultModal
+          isOpen={showOptimizeModal}
+          onClose={() => setShowOptimizeModal(false)}
+          onApply={(content) => {
+            onApply(content);
+            setShowOptimizeModal(false);
+            handleClose();
+          }}
+          onReturn={() => setShowOptimizeModal(false)}
+          originalContent={generatedContent}
+          promptType={promptType}
+          initialSettings={optimizeSettings}
+          onSettingsChange={(settings) => {
+            setOptimizeSettings(settings);
+          }}
         />
       )}
     </>

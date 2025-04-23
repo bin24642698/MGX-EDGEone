@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useNavigation } from '@/contexts/NavigationContext';
+
+// 侧边栏收起状态的localStorage键
+const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
 
 interface SidebarProps {
   activeMenu?: string;
@@ -12,6 +15,15 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { isFirstVisit } = useNavigation();
+
+  // 从 localStorage 加载收起状态
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      return savedState === 'true';
+    }
+    return false;
+  });
 
   // 导航处理函数
   const handleNavigation = (path: string) => {
@@ -24,11 +36,29 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
     return pathname === path;
   };
 
+  // 当收起状态变化时，保存到 localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, isCollapsed.toString());
+    }
+  }, [isCollapsed]);
+
   return (
-    <div className="sidebar w-64 border-r border-accent-brown/30 bg-card-color shadow-md flex flex-col rounded-tr-2xl rounded-br-2xl">
-      <div className="p-5 border-b border-accent-brown/30 flex items-center">
+    <>
+      {/* 收起状态下只显示展开按钮 */}
+      {isCollapsed ? (
+        <button
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-card-color p-2 rounded-r-xl shadow-md border border-l-0 border-accent-brown/30 text-text-medium hover:text-primary-green transition-colors duration-200 z-10"
+          onClick={() => setIsCollapsed(false)}
+          aria-label="展开侧边栏"
+        >
+          <span className="material-icons">chevron_right</span>
+        </button>
+      ) : (
+        <div className="sidebar w-64 border-r border-[rgba(120,180,140,0.2)] bg-card-color shadow-md flex flex-col rounded-tr-2xl rounded-br-2xl transition-all duration-300">
+      <div className="p-5 border-b border-[rgba(120,180,140,0.2)] flex items-center">
         <div className="w-10 h-10 bg-primary-green rounded-xl flex items-center justify-center text-white font-bold mr-3 text-base shadow-sm">智</div>
-        <span 
+        <span
           className="text-xl font-medium text-text-dark"
           style={{ fontFamily: "'Ma Shan Zheng', cursive" }}
         >
@@ -40,7 +70,7 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
         <div className="mb-6 px-4">
           <h3 className="text-xs font-semibold text-text-medium uppercase tracking-wider mb-3">主要功能</h3>
         </div>
-        
+
         <div
           className={`menu-item ${activeMenu === 'novel' ? 'active' : ''}`}
           onClick={() => handleNavigation('/')}
@@ -50,7 +80,7 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
           </div>
           <span className="menu-text">首页</span>
         </div>
-        
+
         <div
           className={`menu-item ${activeMenu === 'works' || (pathname && pathname.startsWith('/works')) ? 'active' : ''}`}
           onClick={() => handleNavigation('/works')}
@@ -60,7 +90,7 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
           </div>
           <span className="menu-text">小说创作</span>
         </div>
-        
+
         <div
           className={`menu-item ${activeMenu === 'creativemap' || (pathname && pathname.startsWith('/creativemap')) ? 'active' : ''}`}
           onClick={() => handleNavigation('/creativemap')}
@@ -74,7 +104,7 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
         <div className="mt-8 mb-4 px-4">
           <h3 className="text-xs font-semibold text-text-medium uppercase tracking-wider mb-3">工具</h3>
         </div>
-        
+
         <div
           className={`menu-item ${activeMenu === 'prompts' || (pathname && pathname.startsWith('/prompts')) ? 'active' : ''}`}
           onClick={() => handleNavigation('/prompts')}
@@ -86,17 +116,21 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
         </div>
       </div>
 
-      <div className="p-4 mt-auto">
-        <div className="bg-bg-color rounded-xl p-4 relative overflow-hidden">
-          <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-primary-green/20 rounded-full opacity-70"></div>
-          <h4 className="font-medium text-text-dark text-sm mb-2 font-ma-shan">写作助手</h4>
-          <p className="text-xs text-text-medium mb-3 relative z-10">探索AI辅助创作的各种新功能和技巧</p>
-          <button className="bg-white text-primary-green text-xs font-medium py-1.5 px-3 rounded-lg shadow-sm hover:shadow transition-shadow duration-200 flex items-center">
-            <span>查看指南</span>
-            <span className="material-icons ml-1 text-sm">arrow_forward</span>
-          </button>
-        </div>
+      <div className="flex-grow"></div>
+
+      {/* 收起/展开按钮 */}
+      <div className="p-4 border-t border-[rgba(120,180,140,0.2)] flex justify-center">
+        <button
+          className="w-full flex items-center justify-center py-2 rounded-xl text-text-medium hover:bg-[rgba(120,180,140,0.1)] transition-colors duration-200"
+          onClick={() => setIsCollapsed(true)}
+          aria-label="收起侧边栏"
+        >
+          <span className="material-icons">chevron_left</span>
+          <span className="ml-2">收起</span>
+        </button>
       </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 }

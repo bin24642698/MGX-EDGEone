@@ -3,6 +3,7 @@ import { Modal } from '@/components/common/modals';
 import { generateAIContentStream, MODELS, Message } from '@/lib/AIserver';
 import { getPromptsByType, Prompt, addArchive, Archive, getAllWorks, Work } from '@/lib/db';
 import { CreativeMapItem } from '@/app/creativemap/page';
+import { OptimizeResultModal } from '@/components/works/OptimizeResultModal'; // 导入优化结果组件
 
 interface CreativeMapWindowProps {
   isOpen: boolean;
@@ -38,8 +39,16 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
   const [worksList, setWorksList] = useState<Work[]>([]);
   const [selectedWorkId, setSelectedWorkId] = useState<number | null>(null);
 
-  // --- Add new state to track if generation has occurred --- 
+  // --- Add new state to track if generation has occurred ---
   const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
+
+  // 优化相关状态
+  const [showOptimizeModal, setShowOptimizeModal] = useState(false);
+  const [optimizeSettings, setOptimizeSettings] = useState<{
+    promptId: number | null;
+    optimizeText: string;
+    selectedModel: string;
+  }>({ promptId: null, optimizeText: '', selectedModel: MODELS.GEMINI_FLASH });
 
   // Helper function to get localStorage key for a given item type
   const getLocalStorageKey = (itemId: string) => `creativeMapLastPrompt_${itemId}`;
@@ -55,7 +64,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
           const fetchedPrompts = await getPromptsByType(item.id as Prompt['type']);
           setPrompts(fetchedPrompts);
 
-          // --- Load last selected prompt ID --- 
+          // --- Load last selected prompt ID ---
           let lastSelectedId: number | null = null;
           if (typeof window !== 'undefined') {
             try {
@@ -68,7 +77,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
             }
           }
 
-          // --- Set initial selected prompt --- 
+          // --- Set initial selected prompt ---
           if (lastSelectedId !== null) {
             const foundPrompt = fetchedPrompts.find(p => p.id === lastSelectedId);
             if (foundPrompt) {
@@ -88,7 +97,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
              // No last selection, keep it null or select first if needed
              setSelectedPrompt(null); // Keep default behavior
           }
-          // --- End of changes --- 
+          // --- End of changes ---
 
           if (fetchedPrompts.length > 0) {
           } else {
@@ -150,7 +159,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
     ];
 
     try {
-      // --- Start: New character-by-character logic --- 
+      // --- Start: New character-by-character logic ---
       let pendingChars: string[] = []; // 等待显示的字符队列
       let isProcessing = false; // 是否正在处理字符队列
 
@@ -159,33 +168,33 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
         // 如果队列中有字符且没有处理循环在运行
         if (pendingChars.length > 0 && !isProcessing) {
           isProcessing = true;
-          
+
           // 立即取出并显示一个字符
           const char = pendingChars.shift() as string;
           setGeneratedContent(prev => prev + char); // 更新 CreativeMapWindow 的状态
-          
+
           // 标记处理完成，并立即尝试处理下一个（如果有）
           isProcessing = false;
           requestAnimationFrame(processCharQueue); // 使用 rAF 优化性能
         }
       };
-      // --- End: New character-by-character logic --- 
+      // --- End: New character-by-character logic ---
 
       await generateAIContentStream(
         messages,
         { model: selectedModel },
         (chunk) => {
-          // --- Start: Updated chunk handling --- 
+          // --- Start: Updated chunk handling ---
           if (!chunk) return;
-          
+
           // 将接收到的chunk分解为字符并加入队列
           for (const char of chunk) {
             pendingChars.push(char);
           }
-          
+
           // 触发字符处理（如果不在处理中）
           processCharQueue();
-          // --- End: Updated chunk handling --- 
+          // --- End: Updated chunk handling ---
         }
       );
     } catch (err) {
@@ -232,7 +241,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
 
     try {
       const title = `新建的${item.name}`;
-      
+
       const newArchiveEntry: Omit<Archive, 'id'> = {
         title: title,
         content: generatedContent,
@@ -292,7 +301,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
              setSelectedPrompt(prompt);
              setError('');
 
-             // --- Save selected prompt ID to localStorage --- 
+             // --- Save selected prompt ID to localStorage ---
              if (prompt && typeof window !== 'undefined') {
                try {
                  localStorage.setItem(getLocalStorageKey(item.id), String(prompt.id));
@@ -382,7 +391,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
         ) : (
             <p className="text-text-medium">没有找到作品。</p>
         )}
-        {/* Add confirmation and cancel buttons for the selection */} 
+        {/* Add confirmation and cancel buttons for the selection */}
         <div className="flex justify-end space-x-3">
             <button
                 onClick={() => setShowWorkSelection(false)}
@@ -410,7 +419,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
               {saveSuccess && <span className="text-green-600">已保存到档案馆!</span>}
               {saveError && <span className="text-red-500">{saveError}</span>}
            </div>
-           
+
            <div className="flex space-x-3">
              <button
                onClick={initiateSaveToArchive}
@@ -421,6 +430,15 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
                <span className="material-icons mr-1 text-sm">save</span>
                保存到档案馆
              </button>
+             {generatedContent && !isGenerating && (
+               <button
+                 onClick={() => setShowOptimizeModal(true)}
+                 className="ghibli-button outline text-sm py-2 transition-all duration-200 flex items-center bg-[rgba(125,133,204,0.1)] border-[#7D85CC] text-[#7D85CC]"
+               >
+                 <span className="material-icons mr-1 text-sm">auto_fix_high</span>
+                 优化
+               </button>
+             )}
              <button
                onClick={() => setShowGenerationView(false)}
                disabled={isGenerating || isSaving}
@@ -444,7 +462,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
        return (
          <div className="flex justify-end space-x-3 pt-2">
            {hasGeneratedOnce ? (
-             // --- Buttons when generation has happened --- 
+             // --- Buttons when generation has happened ---
              <>
                <button
                  onClick={() => setShowGenerationView(true)} // Go back to the results view
@@ -464,7 +482,7 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
                </button>
              </>
            ) : (
-             // --- Initial Buttons --- 
+             // --- Initial Buttons ---
              <>
                <button
                  onClick={onClose} // Close the modal
@@ -494,8 +512,8 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center">
-          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${item.gradient || 'from-gray-400 to-gray-500'} flex items-center justify-center mr-3 text-white shadow-md`}>
-            <span className="material-icons text-lg">{item.icon}</span>
+          <div className={`w-10 h-10 rounded-full ${item.color} flex items-center justify-center mr-3 shadow-md`}>
+            <span className="material-icons text-lg text-white">{item.icon}</span>
           </div>
           <span style={{fontFamily: "'Ma Shan Zheng', cursive"}} className="text-xl text-text-dark">
             {item.name}
@@ -509,13 +527,34 @@ export const CreativeMapWindow: React.FC<CreativeMapWindowProps> = ({
       {showWorkSelection ? (
           renderWorkSelection()
       ) : (
-          <div 
-            ref={scrollableContainerRef} 
+          <div
+            ref={scrollableContainerRef}
             className="scrollable-container"
           >
         {showGenerationView ? renderGenerationView() : renderInputView()}
       </div>
       )}
+      {/* 优化结果模态窗口 */}
+      {showOptimizeModal && (
+        <OptimizeResultModal
+          isOpen={showOptimizeModal}
+          onClose={() => setShowOptimizeModal(false)}
+          onApply={(content) => {
+            setGeneratedContent(content);
+            setShowOptimizeModal(false);
+            // 自动触发保存到档案馆的流程
+            setTimeout(() => initiateSaveToArchive(), 100);
+          }}
+          onReturn={() => setShowOptimizeModal(false)}
+          originalContent={generatedContent}
+          promptType={item.id}
+          initialSettings={optimizeSettings}
+          onSettingsChange={(settings) => {
+            setOptimizeSettings(settings);
+          }}
+          applyButtonText="保存到档案馆"
+        />
+      )}
     </Modal>
   );
-}; 
+};
