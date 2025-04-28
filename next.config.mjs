@@ -12,6 +12,19 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // Cloudflare Pages 配置
+  experimental: {
+    // 启用 Edge Runtime
+    runtime: 'edge',
+    // 启用 Node.js 兼容性
+    serverComponentsExternalPackages: [],
+  },
+
+  // 配置 Cloudflare Pages 环境
+  env: {
+    NEXT_RUNTIME: 'edge',
+  },
 };
 
 export default nextConfig;

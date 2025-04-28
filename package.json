@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "wrangler pages deploy .next --project-name=zgzx-tst"
+    "deploy": "wrangler pages deploy .next --project-name=zgzx-tst --compatibility-flag=nodejs_compat"
   },
   "dependencies": {
     "@fontsource/comfortaa": "^5.2.5",
