@@ -1,15 +1,15 @@
 # Cloudflare Pages 配置
+name = "mgx-edgeone"
+compatibility_date = "2023-10-30"
+node_compat = true
+compatibility_flags = ["nodejs_compat"]
+
 [build]
 command = "npm install && npm run build"
 
-[site]
-bucket = ".next"
-
-# 启用 Node.js 兼容性
-[compatibility_flags]
-nodejs_compat = true
-
-# 指定输出目录
 [build.upload]
 format = "directory"
 dir = ".next"
+
+[site]
+bucket = ".next"

@@ -1,15 +1,17 @@
 # Cloudflare Pages 配置
 [build]
 command = "npm install && npm run build"
+node_version = "22"
+
+[build.environment]
+NODE_VERSION = "22"
+
+[build.upload]
+format = "directory"
+dir = ".next"
 
 [site]
 bucket = ".next"
 
 # 启用 Node.js 兼容性
-[compatibility_flags]
-nodejs_compat = true
-
-# 指定输出目录
-[build.upload]
-format = "directory"
-dir = ".next"
+compatibility_flags = ["nodejs_compat"]

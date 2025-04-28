@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20.0.0"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "wrangler pages deploy .next --project-name=zgzx-tst --compatibility-flag=nodejs_compat"
+    "deploy": "wrangler pages deploy .next --project-name=mgx-edgeone --compatibility-flag=nodejs_compat --node-version=22"
   },
   "dependencies": {
     "@fontsource/comfortaa": "^5.2.5",
