@@ -3,7 +3,8 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/common/modals';
-import { Prompt, getAllPrompts, getPromptsByType } from '@/lib/db';
+import { getAllPrompts, getAIInterfacePromptsByType } from '@/data';
+import { Prompt } from '@/data';
 
 interface OptimizeDialogProps {
   isOpen: boolean;
@@ -34,9 +35,9 @@ export const OptimizeDialog: React.FC<OptimizeDialogProps> = ({
         setIsLoading(true);
         try {
           // 加载AI润色类型的提示词
-          const polishPrompts = await getPromptsByType('ai_polishing');
+          const polishPrompts = await getAIInterfacePromptsByType('ai_polishing');
           setPrompts(polishPrompts);
-          
+
           // 默认选择第一个提示词
           if (polishPrompts.length > 0) {
             setSelectedPrompt(polishPrompts[0]);
@@ -47,7 +48,7 @@ export const OptimizeDialog: React.FC<OptimizeDialogProps> = ({
           setIsLoading(false);
         }
       };
-      
+
       loadPrompts();
     }
   }, [isOpen]);

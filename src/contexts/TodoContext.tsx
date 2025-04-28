@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Todo, addTodo, getAllTodos, updateTodo, deleteTodo, clearAllTodos } from '@/lib/db';
+import { addTodo, getAllTodos, updateTodo, deleteTodo, clearAllTodos } from '@/data';
+import { Todo } from '@/data';
 
 interface TodoContextType {
   todos: Todo[];
@@ -51,7 +52,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
         completed: false,
         createdAt: new Date(),
       };
-      
+
       const addedTodo = await addTodo(newTodo);
       setTodos(prev => [...prev, addedTodo]);
       setError(null);
@@ -124,4 +125,4 @@ export function useTodo() {
     throw new Error('useTodo must be used within a TodoProvider');
   }
   return context;
-} 
+}

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import "./globals.css";
+import "../styles/typing-cursor.css";
+import LogControlInitializer from "@/components/common/LogControlInitializer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "智界引擎 - 创作空间",
-  description: "智界引擎 - 激发你的创作灵感，让写作更加轻松愉快",
+  title: "烛光写作 - 创作空间",
+  description: "烛光写作 - 激发你的创作灵感，让写作更加轻松愉快",
   icons: {
     icon: '/favicon.ico',
   },
@@ -46,6 +48,8 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <NavigationProvider>
+          {/* 日志控制初始化组件 */}
+          <LogControlInitializer />
           <div className="flex flex-col min-h-screen">
             {children}
           </div>

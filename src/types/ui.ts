@@ -49,5 +49,6 @@ export interface CardProps {
   onClick?: () => void;
   tapeColor?: string;
   withPageCurl?: boolean;
+  withTape?: boolean;
   style?: React.CSSProperties;
 }

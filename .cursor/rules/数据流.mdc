@@ -1,11 +1,11 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: false
 ---
-# 智光写作数据流
+# 烛光写作数据流
 
-本文档描述智光写作应用中数据的流动和管理方式。
+本文档描述烛光写作应用中数据的流动和管理方式。
 
 ## 本地存储架构
 

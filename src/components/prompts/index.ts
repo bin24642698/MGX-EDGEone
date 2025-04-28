@@ -4,3 +4,5 @@
 export * from './PromptCard';
 export * from './PromptTypeCard';
 export { PromptDetailContent, promptTypeMap } from './PromptDetailContent';
+export * from './PromptDescriptionView';
+export * from './PromptDetailView';

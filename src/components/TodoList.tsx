@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Todo } from '@/lib/db';
+import { Todo } from '@/data';
 import TodoItem from './TodoItem';
 
 interface TodoListProps {
@@ -49,4 +49,4 @@ export default function TodoList({ todos, onToggle, onDelete, onClear }: TodoLis
       </ul>
     </div>
   );
-} 
+}

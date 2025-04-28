@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Prompt } from '@/lib/db';
+import { Prompt } from '@/data';
+import { PromptContentEditModal } from './PromptContentEditModal';
 
 // 提示词类型映射
 export const promptTypeMap = {
@@ -13,7 +14,8 @@ export const promptTypeMap = {
   'plot': { label: '情节', color: 'bg-[#6F9CE020] text-[#6F9CE0]', icon: 'timeline', gradient: 'from-[#6F9CE0] to-[#9C6FE0]' },
   'introduction': { label: '导语', color: 'bg-[#7D85CC20] text-[#7D85CC]', icon: 'format_quote', gradient: 'from-[#7D85CC] to-[#6F9CE0]' },
   'outline': { label: '大纲', color: 'bg-[#E0976F20] text-[#E0976F]', icon: 'format_list_bulleted', gradient: 'from-[#E0976F] to-[#E0C56F]' },
-  'detailed_outline': { label: '细纲', color: 'bg-[#E0C56F20] text-[#E0C56F]', icon: 'subject', gradient: 'from-[#E0C56F] to-[#E0976F]' }
+  'detailed_outline': { label: '细纲', color: 'bg-[#E0C56F20] text-[#E0C56F]', icon: 'subject', gradient: 'from-[#E0C56F] to-[#E0976F]' },
+  'book_tool': { label: '一键拆书', color: 'bg-[#E0976F20] text-[#E0976F]', icon: 'auto_stories', gradient: 'from-[#E0976F] to-[#E0C56F]' }
 };
 
 // 将类型颜色转换为胶带颜色
@@ -26,7 +28,7 @@ const getTypeColor = (type: string): string => {
 
 interface PromptDetailContentProps {
   prompt: Prompt;
-  isEditing?: boolean;
+  isEditing: boolean;
   editedPrompt?: Prompt;
   handleInputChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   handleExampleChange?: (index: number, value: string) => void;
@@ -58,6 +60,8 @@ export function PromptDetailContent({
   onDelete,
   onCopy
 }: PromptDetailContentProps) {
+  // 状态
+  const [isContentEditModalOpen, setIsContentEditModalOpen] = useState(false);
 
   // 提示词类型的信息
   const typeInfo = promptTypeMap[prompt.type as keyof typeof promptTypeMap];
@@ -70,6 +74,18 @@ export function PromptDetailContent({
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  // 处理内容变更
+  const handleContentChange = (newContent: string) => {
+    if (handleInputChange) {
+      handleInputChange({
+        target: {
+          name: 'content',
+          value: newContent
+        }
+      } as React.ChangeEvent<HTMLTextAreaElement>);
+    }
   };
 
   if (!isEditing) {
@@ -110,9 +126,17 @@ export function PromptDetailContent({
 
         {/* 底部元信息 */}
         <div className="flex items-center justify-between text-text-light text-sm mt-auto">
-          <div className="flex items-center">
-            <span className="material-icons text-xs mr-1">event</span>
-            创建于: {formatDate(prompt.createdAt)}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <span className="material-icons text-xs mr-1">event</span>
+              创建于: {formatDate(prompt.createdAt)}
+            </div>
+            {prompt.isPublic && (
+              <div className="flex items-center text-green-600">
+                <span className="material-icons text-xs mr-1">public</span>
+                公开提示词
+              </div>
+            )}
           </div>
           <div className="flex items-center">
             <span className="material-icons text-xs mr-1">update</span>
@@ -136,23 +160,43 @@ export function PromptDetailContent({
               </button>
             )}
 
-            {onEdit && (
-              <button
-                onClick={onEdit}
-                className="btn-outline flex items-center text-sm px-4 py-2"
-              >
-                <span className="material-icons mr-1 text-sm">edit</span>
-                编辑
-              </button>
+            {onDelete && onEdit && (
+              <>
+                <button
+                  onClick={onEdit}
+                  className="btn-outline flex items-center text-sm px-4 py-2"
+                >
+                  <span className="material-icons mr-1 text-sm">edit</span>
+                  编辑
+                </button>
+
+                <button
+                  onClick={onDelete}
+                  className="btn-outline flex items-center text-sm px-4 py-2 text-[#E06F6F] border-[#E06F6F]"
+                >
+                  <span className="material-icons mr-1 text-sm">delete</span>
+                  删除
+                </button>
+              </>
             )}
 
-            {onDelete && (
+            {onDelete && !onEdit && (
               <button
                 onClick={onDelete}
                 className="btn-outline flex items-center text-sm px-4 py-2 text-[#E06F6F] border-[#E06F6F]"
               >
                 <span className="material-icons mr-1 text-sm">delete</span>
                 删除
+              </button>
+            )}
+
+            {onEdit && !onDelete && (
+              <button
+                onClick={onEdit}
+                className="btn-outline flex items-center text-sm px-4 py-2"
+              >
+                <span className="material-icons mr-1 text-sm">edit</span>
+                编辑
               </button>
             )}
           </div>
@@ -186,13 +230,20 @@ export function PromptDetailContent({
             {/* 提示词内容 */}
             <div>
               <label className="block text-text-dark font-medium mb-2">内容</label>
-              <input
-                type="text"
-                name="content"
-                className="w-full px-4 py-2 bg-white bg-opacity-70 border border-[rgba(120,180,140,0.3)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgba(120,180,140,0.5)] text-text-dark"
-                placeholder="输入提示词内容..."
-                value={editedPrompt?.content || ''}
-                onChange={handleInputChange}
+              <div
+                className="w-full px-4 py-3 bg-white bg-opacity-70 border border-[rgba(120,180,140,0.3)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgba(120,180,140,0.5)] text-text-dark min-h-[120px] overflow-y-auto break-words whitespace-pre-wrap cursor-pointer hover:bg-white hover:bg-opacity-90 transition-colors"
+                onClick={() => setIsContentEditModalOpen(true)}
+              >
+                {editedPrompt?.content || '点击此处编辑提示词内容...'}
+              </div>
+
+              {/* 内容编辑弹窗 */}
+              <PromptContentEditModal
+                isOpen={isContentEditModalOpen}
+                onClose={() => setIsContentEditModalOpen(false)}
+                content={editedPrompt?.content || ''}
+                onChange={handleContentChange}
+                onSave={() => {}}
               />
             </div>
 
@@ -206,6 +257,37 @@ export function PromptDetailContent({
                 value={editedPrompt?.description || ''}
                 onChange={handleInputChange}
               ></textarea>
+            </div>
+
+            {/* 公开设置 */}
+            <div>
+              <label className="block text-text-dark font-medium mb-2">提示词权限</label>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="isPublic"
+                    checked={editedPrompt?.isPublic || false}
+                    onChange={(e) => {
+                      if (handleInputChange) {
+                        const event = {
+                          target: {
+                            name: 'isPublic',
+                            value: e.target.checked
+                          }
+                        } as unknown as React.ChangeEvent<HTMLInputElement>;
+                        handleInputChange(event);
+                      }
+                    }}
+                    className="form-checkbox h-5 w-5 text-[#5a9d6b] rounded border-[rgba(120,180,140,0.5)]"
+                  />
+                  <span className="text-text-medium">允许其他用户查看和使用此提示词</span>
+                </label>
+              </div>
+              <p className="text-text-light text-sm mt-1">
+                <span className="material-icons text-xs align-middle mr-1">info</span>
+                公开的提示词可以被所有用户查看和使用，但内容仍然保持加密状态
+              </p>
             </div>
 
             {/* 示例管理 */}
@@ -279,3 +361,8 @@ export function PromptDetailContent({
     );
   }
 }
+
+
+
+
+

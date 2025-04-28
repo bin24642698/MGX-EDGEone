@@ -2,7 +2,7 @@
  * 档案卡片组件
  */
 import React from 'react';
-import { Archive } from '@/types/db';
+import { Archive } from '@/data';
 
 interface ArchiveCardProps {
   archive: Archive;

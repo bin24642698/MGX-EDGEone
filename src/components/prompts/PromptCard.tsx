@@ -4,6 +4,7 @@
 import React from 'react';
 import { Prompt } from '@/types';
 import { Card } from '@/components/common';
+import { useAuthStore } from '@/store/slices/authStore';
 
 interface PromptTypeInfo {
   label: string;
@@ -17,23 +18,23 @@ interface PromptCardProps {
   prompt: Prompt;
   typeInfo: PromptTypeInfo;
   onClick: () => void;
-  onDelete: (e: React.MouseEvent) => void;
+  onDelete?: (e: React.MouseEvent) => void;
+  isOwner?: boolean;
 }
 
 /**
  * 提示词卡片组件
- * @param props 提示词卡片属性
- * @returns 提示词卡片组件
  */
 export const PromptCard: React.FC<PromptCardProps> = ({
   prompt,
   typeInfo,
   onClick,
-  onDelete
+  onDelete,
+  isOwner = false
 }) => {
   // 提取颜色代码用于胶带
   const tapeColor = typeInfo.color.split(' ')[1].replace('text-', 'rgba(').replace(/\]/, ', 0.7)');
-  
+
   return (
     <Card
       className="p-4 cursor-pointer hover:shadow-md transition-all duration-300 relative"
@@ -50,17 +51,24 @@ export const PromptCard: React.FC<PromptCardProps> = ({
             <h3 className="text-text-dark font-medium truncate">{prompt.title}</h3>
             <div className="flex items-center ml-4">
               <span className={`badge ${typeInfo.color} text-xs px-2`}>{typeInfo.label}</span>
-              <button
-                className="p-1 ml-2 hover:bg-[rgba(120,180,140,0.1)] rounded-full"
-                onClick={onDelete}
-              >
-                <span className="material-icons text-text-light text-sm">delete</span>
-              </button>
             </div>
           </div>
-          <p className="text-text-medium text-sm mt-1 line-clamp-2">{prompt.content}</p>
+          {/* 显示提示词描述而不是内容 */}
+          {prompt.description ? (
+            <p className="text-text-medium text-sm mt-1 line-clamp-2">{prompt.description}</p>
+          ) : (
+            <p className="text-text-medium text-sm mt-1 italic">
+              作者未公开提示词
+            </p>
+          )}
         </div>
       </div>
     </Card>
   );
 };
+
+
+
+
+
+

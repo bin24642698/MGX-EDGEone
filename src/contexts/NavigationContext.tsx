@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { isFirstVisit as checkFirstVisit, markVisited } from '@/lib/settingsManager';
+import { isFirstVisit as checkFirstVisit, markVisited } from '@/data';
 
 // 定义上下文类型
 interface NavigationContextType {

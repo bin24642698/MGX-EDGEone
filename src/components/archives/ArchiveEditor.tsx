@@ -2,7 +2,7 @@
  * 档案编辑器组件
  */
 import React, { useState, useEffect } from 'react';
-import { Archive } from '@/types/db';
+import { Archive } from '@/data';
 
 interface ArchiveEditorProps {
   archive?: Archive;

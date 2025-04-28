@@ -54,6 +54,8 @@ export const PromptTypeCard: React.FC<PromptTypeCardProps> = ({
         return '用于规划故事主线和章节的提示词';
       case 'detailed_outline':
         return '用于设计细节丰富的章节内容的提示词';
+      case 'book_tool':
+        return '一键上传TXT文件，AI智能分析文本内容，快速提取关键信息和创作灵感';
       default:
         return '提示词模板';
     }
@@ -61,9 +63,10 @@ export const PromptTypeCard: React.FC<PromptTypeCardProps> = ({
 
   return (
     <Card
-      className="p-6 cursor-pointer hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+      className="p-6 cursor-pointer hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 animate-fadeIn"
       onClick={onClick}
       style={{ borderColor }}
+      withTape={false}
     >
       <div className="flex items-center mb-4">
         <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 ${typeInfo.color.split(' ')[0]}`}>

@@ -3,8 +3,8 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/common/modals';
-import { Archive } from '@/types/db';
-import { getAllArchives, getArchivesByCategory, getArchivesByWorkId, addArchive, updateArchive, deleteArchive } from '@/lib/db';
+import { Archive } from '@/data';
+import { getAllArchives, getArchivesByCategory, getArchivesByWorkId, addArchive, updateArchive, deleteArchive } from '@/data';
 
 interface ArchiveModalProps {
   isOpen: boolean;

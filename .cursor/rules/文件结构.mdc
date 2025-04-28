@@ -1,9 +1,9 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
-# 智光写作项目文件结构
+# 烛光写作项目文件结构
 
 本文档提供项目的主要文件和目录结构，帮助开发者快速理解项目组织。
 

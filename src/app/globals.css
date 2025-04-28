@@ -167,6 +167,60 @@ body {
   @apply space-y-5 px-1;
 }
 
+/* 限制内容容器高度，防止超出屏幕 */
+.booktool-container {
+  max-height: calc(100vh - 80px);
+  height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.booktool-content {
+  flex: 1;
+  overflow-y: hidden;
+  overflow-x: auto;
+  display: flex;
+}
+
+.booktool-sidebar {
+  width: 25%;
+  border-right: 1px solid rgba(111,156,224,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.booktool-sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(111,156,224,0.1);
+  background-color: rgba(111,156,224,0.03);
+  flex-shrink: 0;
+}
+
+.booktool-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+  max-height: calc(100vh - 350px);
+}
+
+.booktool-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.booktool-main-content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+}
+
 /* 自定义动画 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -690,3 +744,12 @@ div.sidebar:hover,
   background: linear-gradient(135deg, transparent 45%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 55%, var(--card-color) 60%);
   border-radius: 0 0 0 8px;
 }
+
+
+
+
+
+
+
+
+

@@ -1,74 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
-import { saveApiKey } from '@/lib/settingsManager';
-import { resetAllDatabases } from '@/lib/dbManager';
-import { getApiKey } from '@/lib/settingsManager';
+import { useAuth } from '@/hooks/useAuth';
+import LoginModal from '@/components/auth/LoginModal';
+import UserAccountButton from '@/components/auth/UserAccountButton';
 
 export default function Home() {
   // 修改默认选中的菜单为小说创作
   const [activeMenu, setActiveMenu] = useState('novel');
   const router = useRouter();
+  const { user, isAuthenticated, signOut } = useAuth();
 
-  // 添加设置弹窗状态
-  const [showSettings, setShowSettings] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [isResetting, setIsResetting] = useState(false);
-
-  // 加载保存的API密钥
-  useEffect(() => {
-    const loadApiKey = async () => {
-      // Ensure this runs only on the client
-      if (typeof window !== 'undefined') {
-        try {
-          // 使用settingsManager获取API密钥
-          const savedApiKey = await getApiKey();
-          if (savedApiKey) {
-            setApiKey(savedApiKey);
-          }
-        } catch (error) {
-          console.error('加载API密钥失败:', error);
-        }
-      }
-    };
-
-    loadApiKey();
-  }, []);
-
-  // 保存API密钥
-  const handleSaveApiKey = async () => {
-    // Ensure this runs only on the client
-    if (typeof window !== 'undefined') {
-      try {
-        await saveApiKey(apiKey);
-        setShowSettings(false);
-      } catch (error) {
-        console.error('保存API密钥失败:', error);
-        alert('保存API密钥失败，请重试');
-      }
-    }
-  };
-
-  // 重置数据库
-  const handleResetDatabases = async () => {
-    // Ensure this runs only on the client
-    if (typeof window !== 'undefined' && window.confirm('确定要重置所有数据库吗？这将删除所有存储的数据，包括作品、提示词等。')) {
-      try {
-        setIsResetting(true);
-        await resetAllDatabases(); // 使用新的重置函数
-        alert('数据库已重置，页面将刷新');
-        window.location.reload();
-      } catch (error) {
-        console.error('重置数据库失败:', error);
-        alert('重置数据库失败，请查看控制台获取详细信息');
-      } finally {
-        setIsResetting(false);
-      }
-    }
-  };
+  // 添加弹窗状态
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // 创建卡片内容，避免条件渲染导致的问题
   const renderCards = () => {
@@ -85,6 +32,22 @@ export default function Home() {
             <h3 className="font-medium text-text-dark text-xl mb-4" style={{fontFamily: "'Ma Shan Zheng', cursive"}}>我的作品</h3>
             <p className="text-text-medium text-sm mb-6">探索和管理你的创作，随时继续你的写作</p>
             <button className="px-5 py-2 rounded-full bg-[#7D85CC] text-white hover:bg-[#6970B9] transition-colors duration-200">查看作品集</button>
+          </div>
+          <div className="page-curl"></div>
+        </div>
+
+        {/* 一键拆书卡片 */}
+        <div className="ghibli-card group cursor-pointer h-80 text-center" onClick={() => router.push('/booktool')}>
+          <div className="tape" style={{ backgroundColor: 'rgba(111,156,224,0.7)' }}>
+            <div className="tape-texture"></div>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="w-14 h-14 mb-6 rounded-full bg-[rgba(111,156,224,0.15)] flex items-center justify-center">
+              <span className="material-icons text-[#6F9CE0] text-3xl">auto_stories</span>
+            </div>
+            <h3 className="font-medium text-text-dark text-xl mb-4" style={{fontFamily: "'Ma Shan Zheng', cursive"}}>一键拆书</h3>
+            <p className="text-text-medium text-sm mb-6">上传TXT文件，AI智能分析书籍内容和结构</p>
+            <button className="px-5 py-2 rounded-full bg-[#6F9CE0] text-white hover:bg-[#5A8BD0] transition-colors duration-200">开始拆书</button>
           </div>
           <div className="page-curl"></div>
         </div>
@@ -190,13 +153,19 @@ export default function Home() {
           title="别人没有我们都有，别人有的我们更好"
           isHomePage={true}
           actions={
-            <button
-              className="ghibli-button outline text-sm"
-              onClick={() => setShowSettings(true)}
-            >
-              <span className="material-icons mr-1 text-sm">settings</span>
-              设置
-            </button>
+            <div className="flex items-center space-x-2">
+              {isAuthenticated ? (
+                <UserAccountButton />
+              ) : (
+                <button
+                  className="ghibli-button outline text-sm"
+                  onClick={() => setShowLoginModal(true)}
+                >
+                  <span className="material-icons mr-1 text-sm">login</span>
+                  登录
+                </button>
+              )}
+            </div>
           }
         />
 
@@ -295,7 +264,7 @@ export default function Home() {
                       <span className="material-icons text-[#E0C56F]">smart_toy</span>
                     </div>
                     <div>
-                      <h3 className="text-text-dark text-base md:text-lg" style={{fontFamily: "'Ma Shan Zheng', cursive"}}>智能对话助手</h3>
+                      <h3 className="text-text-dark text-base md:text-lg" style={{fontFamily: "'Ma Shan Zheng', cursive"}}>AI对话助手</h3>
                       <p className="text-text-light text-xs md:text-sm">与AI对话，获取写作建议和灵感</p>
                     </div>
                   </div>
@@ -335,7 +304,7 @@ export default function Home() {
                       <span className="material-icons text-blue-600">auto_fix_high</span>
                     </div>
                     <div>
-                      <h3 className="text-text-dark text-base md:text-lg" style={{fontFamily: "'Ma Shan Zheng', cursive"}}>智能优化</h3>
+                      <h3 className="text-text-dark text-base md:text-lg" style={{fontFamily: "'Ma Shan Zheng', cursive"}}>AI优化</h3>
                       <p className="text-text-light text-xs md:text-sm">一键优化你的文章结构和表达</p>
                     </div>
                   </div>
@@ -587,88 +556,13 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 设置弹窗 */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-800">设置</h2>
-              <button
-                className="text-gray-500 hover:text-gray-700"
-                onClick={() => setShowSettings(false)}
-              >
-                <span className="material-icons">close</span>
-              </button>
-            </div>
 
-            <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                API密钥
-              </label>
-              <input
-                type="text"
-                className="input"
-                placeholder="请输入API密钥"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-              <div className="mt-2 space-y-2">
-                <p className="text-xs text-gray-500">
-                  设置API密钥以使用AI功能。如果不设置，将使用默认密钥。
-                </p>
-                <div className="bg-blue-50 p-3 rounded-xl text-xs text-blue-700">
-                  <p className="font-medium mb-1">API密钥说明：</p>
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>API密钥用于访问AI服务</li>
-                    <li>密钥将安全地存储在您的浏览器中</li>
-                    <li>您可以随时更改或删除密钥</li>
-                    <li>如果您没有自己的API密钥，可以使用默认密钥</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
 
-            <div className="mt-8 border-t pt-4 border-gray-200">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">高级选项</h3>
-              <button
-                className="w-full bg-red-50 hover:bg-red-100 text-red-700 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center transition-colors"
-                onClick={handleResetDatabases}
-                disabled={isResetting}
-              >
-                {isResetting ? (
-                  <>
-                    <span className="material-icons animate-spin mr-2 text-sm">refresh</span>
-                    <span>重置中...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="material-icons mr-2 text-sm">delete_forever</span>
-                    <span>重置所有数据库</span>
-                  </>
-                )}
-              </button>
-              <p className="text-xs text-gray-500 mt-2">
-                此操作将删除所有本地存储的数据并解决可能的数据库版本冲突问题。
-              </p>
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                className="btn-outline"
-                onClick={() => setShowSettings(false)}
-              >
-                取消
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handleSaveApiKey}
-              >
-                保存
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 登录弹窗 */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </div>
   );
 }

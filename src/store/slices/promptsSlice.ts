@@ -6,10 +6,12 @@ import { Prompt } from '@/types';
 import {
   getAllPrompts,
   getPromptsByType,
+  getPromptById,
   addPrompt as addPromptToDb,
   updatePrompt as updatePromptInDb,
   deletePrompt as deletePromptFromDb
-} from '@/lib/db';
+} from '@/data';
+import { decryptPromptOnDemand } from '@/lib/promptEncryptionManager';
 
 interface PromptsState {
   prompts: Prompt[];
@@ -34,10 +36,13 @@ interface PromptsState {
   updatePrompt: (prompt: Prompt) => Promise<Prompt>;
 
   // 删除提示词
-  deletePrompt: (id: number) => Promise<void>;
+  deletePrompt: (id: number | string) => Promise<void>;
 
   // 设置选中的提示词
   setSelectedPrompt: (prompt: Prompt | null) => void;
+
+  // 获取解密的提示词内容
+  getDecryptedPromptContent: (promptId: number | string) => Promise<string>;
 }
 
 /**
@@ -181,7 +186,7 @@ export const usePromptsStore = create<PromptsState>((set, get) => ({
   },
 
   // 删除提示词
-  deletePrompt: async (id: number) => {
+  deletePrompt: async (id: number | string) => {
     try {
       set({ isLoading: true, error: null });
       await deletePromptFromDb(id);
@@ -217,5 +222,26 @@ export const usePromptsStore = create<PromptsState>((set, get) => ({
   // 设置选中的提示词
   setSelectedPrompt: (prompt: Prompt | null) => {
     set({ selectedPrompt: prompt });
+  },
+
+  // 获取解密的提示词内容
+  getDecryptedPromptContent: async (promptId: number | string) => {
+    try {
+      // 先从状态中查找提示词
+      const prompt = get().prompts.find(p => p.id === promptId);
+
+      // 如果状态中没有，则从数据库获取
+      const targetPrompt = prompt || await getPromptById(promptId);
+
+      if (!targetPrompt) {
+        throw new Error(`提示词 ID ${promptId} 不存在`);
+      }
+
+      // 解密提示词内容
+      return await decryptPromptOnDemand(targetPrompt);
+    } catch (error) {
+      console.error('获取解密的提示词内容失败:', error);
+      throw error;
+    }
   }
 }));

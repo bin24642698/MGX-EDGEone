@@ -16,14 +16,18 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
   const pathname = usePathname();
   const { isFirstVisit } = useNavigation();
 
-  // 从 localStorage 加载收起状态
-  const [isCollapsed, setIsCollapsed] = useState(() => {
+  // 使用 useState 初始化为 false，然后在 useEffect 中从 localStorage 加载
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // 在客户端加载时从 localStorage 获取状态
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedState = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-      return savedState === 'true';
+      if (savedState === 'true') {
+        setIsCollapsed(true);
+      }
     }
-    return false;
-  });
+  }, []);
 
   // 导航处理函数
   const handleNavigation = (path: string) => {
@@ -57,12 +61,12 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
       ) : (
         <div className="sidebar w-64 border-r border-[rgba(120,180,140,0.2)] bg-card-color shadow-md flex flex-col rounded-tr-2xl rounded-br-2xl transition-all duration-300">
       <div className="p-5 border-b border-[rgba(120,180,140,0.2)] flex items-center">
-        <div className="w-10 h-10 bg-primary-green rounded-xl flex items-center justify-center text-white font-bold mr-3 text-base shadow-sm">智</div>
+        <div className="w-10 h-10 bg-primary-green rounded-xl flex items-center justify-center text-white font-bold mr-3 text-base shadow-sm">烛</div>
         <span
           className="text-xl font-medium text-text-dark"
           style={{ fontFamily: "'Ma Shan Zheng', cursive" }}
         >
-          逐光写作
+          烛光写作
         </span>
       </div>
 
@@ -113,6 +117,16 @@ export default function Sidebar({ activeMenu = 'works' }: SidebarProps) {
             <span className="material-icons text-xl">edit_note</span>
           </div>
           <span className="menu-text">提示词管理</span>
+        </div>
+
+        <div
+          className={`menu-item ${activeMenu === 'booktool' || (pathname && pathname.startsWith('/booktool')) ? 'active' : ''}`}
+          onClick={() => handleNavigation('/booktool')}
+        >
+          <div className="menu-icon">
+            <span className="material-icons text-xl">auto_stories</span>
+          </div>
+          <span className="menu-text">一键拆书</span>
         </div>
       </div>
 

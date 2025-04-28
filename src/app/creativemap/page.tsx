@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import BackButton from '@/components/BackButton';
 import TopBar from '@/components/TopBar';
 import { CreativeMapWindow } from '@/components/creativemap/CreativeMapWindow'; // 导入新窗口组件
-import { getApiKey } from '@/lib/settingsManager'; // 导入设置管理模块
+// 不再需要导入getApiKey
 
 // 导入openDB
 import { openDB } from 'idb';
@@ -112,20 +112,10 @@ export default function CreativeMapPage() {
   const [isWindowOpen, setIsWindowOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CreativeMapItem | null>(null);
 
-  // 加载API密钥
+  // 设置API密钥状态为true，表示可以使用API
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const savedApiKey = await getApiKey();
-        if (savedApiKey) {
-          setApiKey(savedApiKey); // Store the key itself
-        }
-      } catch (error) {
-        console.error('加载API密钥失败:', error);
-        // Optionally set an error state here
-      }
-    };
-    loadData();
+    // 不再需要从本地存储加载API密钥，现在使用API密钥池服务
+    setApiKey('available');
   }, []);
 
   // 打开窗口的函数
@@ -244,7 +234,6 @@ export default function CreativeMapPage() {
           isOpen={isWindowOpen}
           onClose={closeCreativeWindow}
           item={selectedItem} // Pass the full item object
-          apiKeyExists={!!apiKey} // Pass boolean indicating if key exists
         />
       )}
     </div>

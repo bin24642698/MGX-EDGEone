@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllWorks, addWork, updateWork, deleteWork, Work } from '@/lib/db';
+import { getAllWorks, addWork, updateWork, deleteWork, Work } from '@/data';
 import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
 import Encoding from 'encoding-japanese';
@@ -13,17 +13,17 @@ function convertChineseEncoding(buffer: ArrayBuffer): string {
   try {
     // 转换为Uint8Array以便处理
     const uint8Array = new Uint8Array(buffer);
-    
+
     // 首先检查是否是UTF-8 BOM
-    if (uint8Array.length >= 3 && 
-        uint8Array[0] === 0xEF && 
-        uint8Array[1] === 0xBB && 
+    if (uint8Array.length >= 3 &&
+        uint8Array[0] === 0xEF &&
+        uint8Array[1] === 0xBB &&
         uint8Array[2] === 0xBF) {
       // UTF-8带BOM
       console.log('检测到UTF-8 BOM');
       return new TextDecoder('utf-8').decode(uint8Array.slice(3));
     }
-    
+
     // 尝试使用浏览器原生TextDecoder解码UTF-8
     let utf8Text = '';
     try {
@@ -40,19 +40,19 @@ function convertChineseEncoding(buffer: ArrayBuffer): string {
     // 尝试检测编码
     const detected = Encoding.detect(uint8Array);
     console.log('Encoding-Japanese检测到的编码:', detected);
-    
+
     // 尝试GBK解码 - 使用text-encoding库的polyfill
     try {
       console.log('尝试GBK解码');
       // 注意：浏览器原生不支持GBK，使用polyfill
       const gbkText = new TextDecoderPolyfill('gbk').decode(uint8Array);
-      
+
       // 检查是否有明显乱码
       const gbkFffdCount = (gbkText.match(/\uFFFD/g) || []).length;
       const utf8FffdCount = (utf8Text.match(/\uFFFD/g) || []).length;
-      
+
       console.log('GBK解码乱码数:', gbkFffdCount, 'UTF-8解码乱码数:', utf8FffdCount);
-      
+
       // 如果GBK解码的乱码更少，使用GBK解码结果
       if (gbkFffdCount < utf8FffdCount) {
         console.log('使用GBK解码结果');
@@ -67,22 +67,22 @@ function convertChineseEncoding(buffer: ArrayBuffer): string {
       console.log('尝试使用Encoding-Japanese转换');
       // 尝试使用检测到的编码，如果是BINARY（无法检测）则尝试GBK
       const fromEncoding = detected === 'BINARY' ? 'GBK' : detected;
-      
+
       const unicodeArray = Encoding.convert(uint8Array, {
         to: 'UNICODE',
         from: fromEncoding
       });
-      
+
       const convertedText = Encoding.codeToString(unicodeArray);
-      
+
       // 检查转换结果中的乱码
       const convertedFffdCount = (convertedText.match(/\uFFFD/g) || []).length;
       const utf8FffdCount = (utf8Text.match(/\uFFFD/g) || []).length;
-      
+
       console.log('Encoding-Japanese转换乱码数:', convertedFffdCount, 'UTF-8解码乱码数:', utf8FffdCount);
-      
+
       // 如果是中文相关编码或转换后乱码更少，使用转换结果
-      if (['GBK', 'GB18030', 'GB2312', 'BIG5', 'CHINESE'].includes(detected) || 
+      if (['GBK', 'GB18030', 'GB2312', 'BIG5', 'CHINESE'].includes(detected) ||
           convertedFffdCount < utf8FffdCount) {
         console.log('使用Encoding-Japanese转换结果');
         return convertedText;
@@ -90,7 +90,7 @@ function convertChineseEncoding(buffer: ArrayBuffer): string {
     } catch (encError) {
       console.warn('Encoding-Japanese转换失败', encError);
     }
-    
+
     // 如果上述所有方法都失败或效果不理想，回退到UTF-8
     console.log('所有方法效果不佳，回退到UTF-8解码结果');
     return utf8Text;
@@ -155,7 +155,7 @@ export default function WorksPage() {
     setFormData({
       title: '',
     });
-    setFileUploadMode(false);
+    // 不重置fileUploadMode，保留当前状态
     setUploadedFile(null);
     setChapterPreview([]);
     setShowPreview(false);
@@ -312,7 +312,7 @@ export default function WorksPage() {
       // 读取文件内容
       let fileBuffer = await file.arrayBuffer();
       console.log('文件大小:', fileBuffer.byteLength, '字节');
-      
+
       // 检查文件的前几个字节，帮助判断编码
       const dataView = new DataView(fileBuffer);
       let hexHeader = '';
@@ -320,22 +320,22 @@ export default function WorksPage() {
         hexHeader += dataView.getUint8(i).toString(16).padStart(2, '0') + ' ';
       }
       console.log('文件头部字节:', hexHeader);
-      
+
       let text = '';
-      
+
       // 尝试处理不同的编码
       try {
         // 使用改进的编码检测和转换
         console.log('开始尝试解码文件');
         text = convertChineseEncoding(fileBuffer);
         console.log('解码完成，结果长度:', text.length);
-        
+
         // 检查解码结果中的乱码数量
         const fffdCount = (text.match(/\uFFFD/g) || []).length;
         if (fffdCount > 0) {
           console.warn(`解码后仍有 ${fffdCount} 个乱码字符`);
         }
-        
+
         // 如果文本中仍包含明显的乱码特征，记录警告
         if (text.includes('\uFFFD') || text.includes('锟斤拷')) {
           console.warn('文本中可能存在编码问题，尝试手动转换');
@@ -350,11 +350,11 @@ export default function WorksPage() {
 
       // 过滤掉常见的电子书水印和版权声明
       const cleanText = text.replace(/☆[^☆]*?看帮网[^☆]*?☆/g, '').replace(/☆本文由.*?所有☆/g, '').replace(/☆请勿用于商业.*?自负☆/g, '').replace(/☆https?:\/\/www\.kanbang\.cc☆/g, '');
-      
+
       // 提取文本中的一小部分用于检查
       const textSample = text.substring(0, 200);
       console.log('文本样本:', textSample);
-      
+
       // 解析章节
       console.log('开始解析章节');
       const chapters = parseChapters(cleanText);
@@ -387,18 +387,18 @@ export default function WorksPage() {
   const parseChapters = (text: string): { title: string; content: string }[] => {
     // 过滤掉常见的电子书水印和版权声明
     const cleanText = text.replace(/☆[^☆]*?看帮网[^☆]*?☆/g, '').replace(/☆本文由.*?所有☆/g, '').replace(/☆请勿用于商业.*?自负☆/g, '').replace(/☆https?:\/\/www\.kanbang\.cc☆/g, '');
-    
+
     // 章节识别的正则表达式
     // 1. 章节格式
     const chapterRegex = /(第[零一二三四五六七八九十百千0-9]+章(\s+[^\n]+)?|第[0-9]{1,4}章(\s+[^\n]+)?|Chapter\s+[0-9]+(\s+[^\n]+)?|CHAPTER\s+[0-9]+(\s+[^\n]+)?)/gi;
-    
+
     // 2. 卷/册/部等结构，这些不直接作为分章依据，但是可以记录
     const volumeRegex = /(第[零一二三四五六七八九十百千0-9]+[卷册部篇集](\s+[^\n]+)?)/gi;
-    
+
     // 查找所有章节标记及其位置
     let chapterMatches: { title: string, index: number }[] = [];
     let match;
-    
+
     // 查找正式章节
     while ((match = chapterRegex.exec(cleanText)) !== null) {
       // 防止重复匹配相同位置的章节
@@ -423,7 +423,7 @@ export default function WorksPage() {
     // 如果没有找到任何章节标题
     if (chapterMatches.length === 0) {
       console.log("未找到标准章节格式，尝试通过卷/册/部来分章");
-      
+
       // 尝试使用卷/册/部等结构分章
       while ((match = volumeRegex.exec(cleanText)) !== null) {
         // 防止重复匹配
@@ -724,8 +724,8 @@ export default function WorksPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
                 {/* 创建新作品的专属卡片 */}
-                <div 
-                  className="ghibli-card h-72 text-center cursor-pointer bg-gradient-to-br from-[rgba(120,180,140,0.05)] to-[rgba(125,133,204,0.1)] hover:from-[rgba(120,180,140,0.1)] hover:to-[rgba(125,133,204,0.15)] transition-all duration-300 hover:shadow-xl hover:-translate-y-1" 
+                <div
+                  className="ghibli-card h-72 text-center cursor-pointer bg-gradient-to-br from-[rgba(120,180,140,0.05)] to-[rgba(125,133,204,0.1)] hover:from-[rgba(120,180,140,0.1)] hover:to-[rgba(125,133,204,0.15)] transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                   onClick={() => handleCreateWork()}
                 >
                   <div className="tape bg-gradient-to-r from-[rgba(120,180,140,0.7)] to-[rgba(125,133,204,0.7)]">
@@ -738,7 +738,7 @@ export default function WorksPage() {
                     <h3 className="font-medium text-text-dark text-xl mb-3" style={{fontFamily: "'Ma Shan Zheng', cursive"}}>创建新作品</h3>
                     <p className="text-text-medium text-sm mb-6 px-6">开始你的创作之旅，记录灵感与故事</p>
                     <div className="flex justify-center space-x-3">
-                      <button 
+                      <button
                         className="px-3 py-1.5 rounded-full text-white bg-[#78B48C] hover:bg-[#6AA47C] transition-all duration-200 text-xs flex items-center shadow-sm hover:shadow hover:scale-105"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -749,7 +749,7 @@ export default function WorksPage() {
                         <span className="material-icons text-xs mr-1">edit</span>
                         新建
                       </button>
-                      <button 
+                      <button
                         className="px-3 py-1.5 rounded-full text-white bg-[#9C6FE0] hover:bg-[#8D60D1] transition-all duration-200 text-xs flex items-center shadow-sm hover:shadow hover:scale-105"
                         onClick={(e) => {
                           e.stopPropagation();

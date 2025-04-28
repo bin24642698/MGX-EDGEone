@@ -10,12 +10,12 @@ interface BackButtonProps {
 
 /**
  * 统一回退按钮组件
- * 
+ *
  * 实现了应用内统一的回退逻辑：
  * - 回退到上一个功能界面，而不是浏览器的上一个页面
  * - 最终回退到首页（小说创作页面）
  * - 基于当前路径决定回退到哪个页面
- * 
+ *
  * 回退逻辑：
  * 1. 从作品列表(/works)回退到首页(/)
  * 2. 从作品详情(/works/*)回退到作品列表(/works)
@@ -27,26 +27,26 @@ interface BackButtonProps {
 export default function BackButton({ href, backPath }: BackButtonProps) {
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const handleClick = () => {
     // 如果提供了明确的href，则导航到指定路径
     if (href) {
       router.push(href);
       return;
     }
-    
+
     // 如果提供了明确的backPath，则导航到指定路径
     if (backPath) {
       router.push(backPath);
       return;
     }
-    
+
     // 确保pathname不为null
     if (!pathname) {
       router.push('/');
       return;
     }
-    
+
     // 根据当前路径决定回退到哪个页面
     if (pathname === '/works') {
       // 从作品列表回退到首页
@@ -57,6 +57,12 @@ export default function BackButton({ href, backPath }: BackButtonProps) {
     } else if (pathname === '/prompts') {
       // 从提示词管理回退到首页
       router.push('/');
+    } else if (pathname === '/booktool') {
+      // 从拆书工具回退到首页
+      router.push('/');
+    } else if (pathname === '/prompts/type/book_tool') {
+      // 从一键拆书提示词页面回退到提示词管理
+      router.push('/prompts');
     } else if (pathname.startsWith('/prompts/')) {
       // 从提示词详情或创建页面回退到提示词管理
       router.push('/prompts');
@@ -68,9 +74,9 @@ export default function BackButton({ href, backPath }: BackButtonProps) {
       router.push('/');
     }
   };
-  
+
   return (
-    <button 
+    <button
       className="p-2 mr-3 hover:bg-[rgba(90,157,107,0.15)] rounded-full transition-colors duration-200 flex items-center justify-center"
       onClick={handleClick}
       aria-label="返回"
@@ -78,4 +84,4 @@ export default function BackButton({ href, backPath }: BackButtonProps) {
       <span className="material-icons text-primary-green">arrow_back</span>
     </button>
   );
-} 
+}

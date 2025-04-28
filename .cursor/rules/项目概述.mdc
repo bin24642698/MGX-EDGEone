@@ -1,11 +1,11 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: false
 ---
-# 智光写作项目概述
+# 烛光写作项目概述
 
-智光写作是一个使用Next.js构建的在线写作平台，结合现代UI设计和AI功能，帮助作者创作、整理和优化他们的作品。
+烛光写作是一个使用Next.js构建的在线写作平台，结合现代UI设计和AI功能，帮助作者创作、整理和优化他们的作品。
 
 ## 主要功能
 

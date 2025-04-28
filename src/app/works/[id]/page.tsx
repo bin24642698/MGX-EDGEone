@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 
 import { useParams, useRouter } from 'next/navigation';
-import { getWorkById, updateWork, Work } from '@/lib/db';
+import { getWorkById, updateWork, Work } from '@/data';
 import BackButton from '@/components/BackButton';
 import TopBar from '@/components/TopBar';
 import { AIAssistantModal } from '@/components/works/AIAssistantModal';
@@ -104,8 +104,8 @@ const ChapterSidebar = ({
       ) : (
         <div className="sidebar w-64 border-r border-[rgba(120,180,140,0.2)] bg-card-color shadow-md flex flex-col rounded-tr-2xl rounded-br-2xl transition-all duration-300">
           <div className="p-5 border-b border-[rgba(120,180,140,0.2)] flex items-center">
-            <div className="w-10 h-10 bg-primary-green rounded-xl flex items-center justify-center text-white font-bold mr-3 text-base shadow-sm">智</div>
-            <span className="text-text-dark text-lg font-medium tracking-wide" style={{ fontFamily: "'Ma Shan Zheng', cursive" }}>逐光写作</span>
+            <div className="w-10 h-10 bg-primary-green rounded-xl flex items-center justify-center text-white font-bold mr-3 text-base shadow-sm">烛</div>
+            <span className="text-text-dark text-lg font-medium tracking-wide" style={{ fontFamily: "'Ma Shan Zheng', cursive" }}>烛光写作</span>
           </div>
 
           <div className="flex-1 py-6 px-2 overflow-auto">
