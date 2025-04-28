@@ -3,3 +3,6 @@ command = "npm install && npm run build"
 
 # Cloudflare Pages specific configuration
 pages_build_output_dir = ".next"
+
+# 启用 Node.js 兼容性
+nodejs_compat = true
