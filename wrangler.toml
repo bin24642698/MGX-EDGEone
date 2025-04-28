@@ -1,15 +1,10 @@
 # Cloudflare Pages 配置
 name = "mgx-edgeone"
 compatibility_date = "2023-10-30"
-node_compat = true
 compatibility_flags = ["nodejs_compat"]
 
+# 指定构建输出目录
+pages_build_output_dir = ".next"
+
 [build]
-command = "npm install && npm run build"
-
-[build.upload]
-format = "directory"
-dir = ".next"
-
-[site]
-bucket = ".next"
+command = "npx @cloudflare/next-on-pages@1"
