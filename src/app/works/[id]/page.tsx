@@ -1,5 +1,8 @@
 'use client';
 
+// 添加 Edge Runtime 配置
+export const runtime = 'edge';
+
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 
 import { useParams, useRouter } from 'next/navigation';
