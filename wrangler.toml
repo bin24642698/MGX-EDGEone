@@ -8,6 +8,9 @@ NODE_VERSION = "18"
 [site]
 bucket = ".next"
 
+# Cloudflare Pages specific configuration
+pages_build_output_dir = ".next"
+
 [env.production]
 name = "烛光写作"
 
