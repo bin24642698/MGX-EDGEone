@@ -1,0 +1,32 @@
+[build]
+command = "npm install --no-package-lock && npm run build"
+cwd = "."
+
+[build.environment]
+NODE_VERSION = "18"
+
+[site]
+bucket = ".next"
+
+[env.production]
+name = "烛光写作"
+
+[env.development]
+name = "烛光写作-开发版"
+
+[build.processing]
+skip_missing = true
+
+[build.processing.css]
+bundle = true
+minify = true
+
+[build.processing.js]
+bundle = true
+minify = true
+
+[build.processing.html]
+minify = true
+
+[build.processing.images]
+compress = true
